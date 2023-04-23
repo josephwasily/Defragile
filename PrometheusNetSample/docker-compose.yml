@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  prometheusnetsample.webapi:
+    container_name: prometheusnetsample_webapi
+    image: ${DOCKER_REGISTRY-}prometheusnetsamplewebapi
+    build:
+      context: .
+      dockerfile: TestAPI/Dockerfile

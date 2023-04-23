@@ -1,0 +1,22 @@
+# Configures a proxy to forward/mess with your requests
+# to/from www.google.com This example adds a 5s delay
+# to the response.
+proxy:
+  - name: http_proxy
+    config:
+      host: 0.0.0.0
+      port: 8080
+      proxy_host: 192.168.55.12
+      proxy_port: 80
+
+# Proxy plugins
+middleware:
+
+  # Message Delay request/response plugin
+  # - name: delay
+  #   config:
+  #     request_delay: 10000
+  #     response_delay: 10000
+
+  # Log in/out messages
+  - name: logger  

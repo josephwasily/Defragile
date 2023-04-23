@@ -1,0 +1,6 @@
+FROM alpine:3.2 
+
+RUN apk update 
+RUN apk upgrade 
+RUN apk add curl bash
+CMD curl -s -XPOST -d '{"name" : "google", "listen" : "mytoxiproxy:22220", "upstream" : "https://google.com"}' http://mytoxiproxy:8474/proxies

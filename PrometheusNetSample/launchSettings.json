@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "grafana": "StartWithoutDebugging",
+        "node-exporter": "StartWithoutDebugging",
+        "prometheus": "StartWithoutDebugging",
+        "prometheusnetsample.webapi": "StartDebugging",
+        "mytoxiproxy": "StartWithoutDebugging"
+      }
+    }
+  }
+}
