@@ -5,7 +5,8 @@ services:
 
   mynginx:
     image: nginx
-  
+    ports:
+      - "80:80"
   mytoxiproxy:
     image: shopify/toxiproxy
     ports:
