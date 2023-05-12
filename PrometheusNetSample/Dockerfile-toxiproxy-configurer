@@ -3,4 +3,4 @@ FROM alpine:3.2
 RUN apk update 
 RUN apk upgrade 
 RUN apk add curl bash
-CMD curl -s -XPOST -d '{"name" : "mynginx", "listen" : "mytoxiproxy:22220", "upstream" : "mynginx:80"}' http://mytoxiproxy:8474/proxies
+CMD curl -s -XPOST -d '{"name" : "mynginx", "listen" : "mytoxiproxy:34112", "upstream" : "16.16.220.246:80"}' http://mytoxiproxy:8474/proxies
