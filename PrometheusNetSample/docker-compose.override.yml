@@ -25,9 +25,9 @@ services:
       - "62939:80"
     #networks:
     #- myNetwork
-    labels:
-        "com.docker-tc.enabled": "1"
-        "com.docker-tc.delay": "10000ms"
+    #labels:
+    #    "com.docker-tc.enabled": "1"
+    #    "com.docker-tc.delay": "10000ms"
     deploy:
       resources:
         limits:
@@ -129,6 +129,16 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     expose:
       - 9100
+
+  conntrack_exporter:
+    image: hiveco/conntrack_exporter:latest
+    container_name: conntrack_exporter
+    restart: unless-stopped
+    cap_add:
+     - NET_ADMIN
+    network_mode: "host"
+    ports:
+    - "9318:9318"
     #networks:
     #  - myNetwork
 

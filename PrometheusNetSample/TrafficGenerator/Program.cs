@@ -9,6 +9,22 @@ using System.Net.Http.Headers;
 Console.WriteLine("Please Enter Test Name");
 var test_name = Console.ReadLine();
 var base_uri = new Uri("http://127.0.0.1:62939");
+Console.WriteLine("Please Enter Rate (Seconds)");
+var rate = Convert.ToInt32(Console.ReadLine());
+
+Console.WriteLine("Please Enter Interval (seconds)");
+var interval = Convert.ToInt32(Console.ReadLine());
+
+Console.WriteLine("Please Enter Duration (seconds)");
+var duration = Convert.ToInt32(Console.ReadLine());
+
+Console.WriteLine("Please Enter Experiment Timeout (seconds)");
+var timeout = Convert.ToInt32(Console.ReadLine());
+
+
+Console.WriteLine("Please Enter number of iterations");
+var loop = Convert.ToInt32(Console.ReadLine());
+
 var scenario_delay = Scenario.Create("Network-Bound API (With Delay)", async context =>
 {
     // you can define and execute any logic here,
@@ -16,14 +32,14 @@ var scenario_delay = Scenario.Create("Network-Bound API (With Delay)", async con
     // NBomber will measure how much time it takes to execute your logic
     using HttpClient client = new();
     client.BaseAddress = base_uri;
-    await client.GetAsync("/Experiment");
+    await client.GetAsync("/Experiment?timeOut="+timeout);
     return Response.Ok();
 })
        .WithoutWarmUp()
        .WithLoadSimulations(
-           Simulation.Inject(rate: 30,
-                             interval: TimeSpan.FromSeconds(5),
-                             during: TimeSpan.FromSeconds(120))
+           Simulation.Inject(rate: rate,
+                             interval: TimeSpan.FromSeconds(interval),
+                             during: TimeSpan.FromSeconds(duration))
        );
 
 var scenario_cpu = Scenario.Create("CPU-Bound API", async context =>
@@ -39,9 +55,9 @@ var scenario_cpu = Scenario.Create("CPU-Bound API", async context =>
         //.WithWarmUpDuration(TimeSpan.FromSeconds(10))
      .WithoutWarmUp()
     .WithLoadSimulations(
-           Simulation.Inject(rate: 30,
-                             interval: TimeSpan.FromSeconds(5),
-                             during: TimeSpan.FromSeconds(120))
+           Simulation.Inject(rate: rate,
+                             interval: TimeSpan.FromSeconds(interval),
+                             during: TimeSpan.FromSeconds(duration))
        );
 
 var scenario_network = Scenario.Create("Network-Bound API (Without Delay)", async context =>
@@ -54,15 +70,22 @@ var scenario_network = Scenario.Create("Network-Bound API (Without Delay)", asyn
        //.WithWarmUpDuration(TimeSpan.FromSeconds(10))
     .WithoutWarmUp()   
     .WithLoadSimulations(
-           Simulation.Inject(rate: 30,
-                             interval: TimeSpan.FromSeconds(5),
-                             during: TimeSpan.FromSeconds(120))
+           Simulation.Inject(rate: rate,
+                             interval: TimeSpan.FromSeconds(interval),
+                             during: TimeSpan.FromSeconds(duration))
        );
-var stats = NBomberRunner
-    .RegisterScenarios(scenario_delay, scenario_cpu, scenario_network)
-  .WithReportFileName($"fetch_users_report_{test_name}")
-  .WithReportFolder($"fetch_users_report_{test_name}")
-  .WithReportFormats(ReportFormat.Txt, ReportFormat.Csv, ReportFormat.Html, ReportFormat.Md)
-    .Run();
+
+
+    for(int i = 0; i< loop; i++)
+    {
+        var stats = NBomberRunner
+        .RegisterScenarios(scenario_delay, scenario_cpu, scenario_network)
+        .WithReportFileName($"fetch_users_report_{test_name}_{i}")
+        .WithReportFolder($"fetch_users_report_{test_name}_{i}")
+        .WithReportFormats(ReportFormat.Txt, ReportFormat.Csv, ReportFormat.Html, ReportFormat.Md)
+        .Run();
+        await Task.Delay(5000);
+    }
+
 
 Console.ReadLine();

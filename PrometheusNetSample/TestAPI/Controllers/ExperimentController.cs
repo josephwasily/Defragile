@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.CircuitBreaker;
 
 namespace PrometheusNetSample.WebApi.Controllers
 {
@@ -23,11 +20,33 @@ namespace PrometheusNetSample.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<string> Get()
+        public async Task<string> Get(long? timeOut)
         {
-            //_httpClient.Timeout = TimeSpan.FromSeconds(10);
-            var response = await _httpClient.GetAsync("/");
-            return await response.Content.ReadAsStringAsync();
+            //        var circuitBreakerPolicy = Policy.Handle<Exception>()
+            //.AdvancedCircuitBreaker(
+            //    failureThreshold: 0.5, // 50% failure rate
+            //    samplingDuration: TimeSpan.FromMinutes(1), // Last 1 minute
+            //    minimumThroughput: 10, // Minimum number of requests before evaluating circuit
+            //    durationOfBreak: TimeSpan.FromSeconds(30)); // Break for 30 seconds
+
+            //        var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromSeconds(1));
+
+            //        var httpClient = new HttpClient();
+
+            //        //var policy = Policy.Wrap( circuitBreakerPolicy, timeoutPolicy);
+
+            //        // Usage example
+            //        try
+            //        {
+            //            var result = await timeoutPolicy.ExecuteAsync(
+            //                () => _httpClient.GetAsync("/"));
+            //            return await result.Content.ReadAsStringAsync();
+            //            // Handle successful response
+            //        }
+
+
+            var result = await _httpClient.GetAsync("/");
+            return await result.Content.ReadAsStringAsync();
         }
-    }
+    } 
 }

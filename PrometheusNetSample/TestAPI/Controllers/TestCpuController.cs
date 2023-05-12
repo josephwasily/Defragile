@@ -40,7 +40,7 @@ namespace PrometheusNetSample.WebApi.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
-            CalculateSumOfPrimes(109_000);
+            CalculateSumOfPrimes(109_000);  
             Console.WriteLine(JsonConvert.SerializeObject(data));
             // var response = await _httpClient.GetAsync("https://example.com");
             //return await response.Content.ReadAsStringAsync();

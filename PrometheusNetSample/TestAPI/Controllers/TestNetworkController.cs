@@ -31,9 +31,10 @@ namespace PrometheusNetSample.WebApi.Controllers
         {
             List<string> urls = new List<string>()
             {
-                "https://www.example.com/",
-                "https://www.google.com/",
-                "https://www.bing.com/",
+                "https://timeapi.io/api/Time/current/zone?timeZone=Europe/Amsterdam",
+                "https://www.google.com",
+                "https://www.example.com",
+                "https://pokeapi.co/api/v2/pokemon"
             };
             string randomUrl = GetRandomUrl(urls);
             var response = await _httpClient.GetAsync(randomUrl);
