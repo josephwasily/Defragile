@@ -19,8 +19,6 @@ RUN dotnet publish "TestAPI.csproj" -c Release -o /app/publish /p:UseAppHost=fal
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .\
-RUN apt install firmware-ralink.
-RUN apt install iproute2.
 RUN apk update 
 RUN apk upgrade 
 RUN apk add curl bash
