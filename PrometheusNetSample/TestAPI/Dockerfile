@@ -18,8 +18,5 @@ RUN dotnet publish "TestAPI.csproj" -c Release -o /app/publish /p:UseAppHost=fal
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish 
-RUN apk update 
-RUN apk upgrade 
-RUN apk add curl bash
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TestAPI.dll"]
