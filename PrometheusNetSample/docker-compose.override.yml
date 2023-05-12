@@ -41,6 +41,7 @@ services:
   prometheus:       
     image: prom/prometheus:latest
     container_name: prometheusnetsample_prometheus
+    user: root
     restart: unless-stopped
     environment:
       GF_INSTALL_PLUGINS: "grafana-clock-panel,briangann-gauge-panel,natel-plotly-panel,grafana-simple-json-datasource"
@@ -68,6 +69,7 @@ services:
      - 3000:3000
     container_name: prometheusnetsample_grafana
     restart: unless-stopped
+    user: root
     links:
       - prometheus:prometheus
     volumes:
