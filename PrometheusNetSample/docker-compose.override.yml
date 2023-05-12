@@ -9,6 +9,7 @@ services:
       - "80:80"
   mytoxiproxy:
     image: shopify/toxiproxy
+    network_mode: host
     ports:
       - "8474:8474"
       - "22220:22220"
