@@ -12,6 +12,7 @@ services:
     ports:
       - "8474:8474"
       - "22220:22220"
+      - "34112:34112"
   mytoxiproxy-configurer:
     build: 
       context: .
