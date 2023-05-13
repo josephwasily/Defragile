@@ -1,4 +1,5 @@
 using Prometheus;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +13,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient("backendHttpClient", client =>
 {
-    client.BaseAddress = new Uri("http://mytoxiproxy:22220/");
+    client.BaseAddress = new Uri("https://mytoxiproxy:22220");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-})
-    .UseHttpClientMetrics();
+    
+}).UseHttpClientMetrics();
 
 var app = builder.Build();
 

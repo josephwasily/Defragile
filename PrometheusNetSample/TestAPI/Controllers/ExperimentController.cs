@@ -44,7 +44,6 @@ namespace PrometheusNetSample.WebApi.Controllers
             //            // Handle successful response
             //        }
 
-
             var result = await _httpClient.GetAsync("/");
             return await result.Content.ReadAsStringAsync();
         }
