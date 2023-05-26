@@ -22,7 +22,7 @@ namespace AntifragilePolicies.Polly
         }
         public async Task<double> GetP95Latency(double timeWindowSeconds, string endpoint)
         {
-            string query = $"histogram_quantile(0.95, sum by(le) (rate(httpclient_request_duration_seconds_bucket{{client=\"{endpoint}\"}}[{timeWindowSeconds}s])))";
+            string query = $"histogram_quantile(0.95, sum by(le) (rate(httpclient_request_duration_seconds_bucket{{client=\"{endpoint}\"}}[{(int)Math.Floor(timeWindowSeconds)}s])))";
             var response = await _httpClient.GetAsync($"{prometheusApiUrl}?query={HttpUtility.UrlEncode(query)}");
             var responseString = await response.Content.ReadAsStringAsync();
             Console.WriteLine(responseString);
