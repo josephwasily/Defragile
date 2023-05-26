@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 
 Console.WriteLine("Please Enter Test Name");
 var test_name = Console.ReadLine();
-var base_uri = new Uri("http://16.16.122.234:62939");
+var base_uri = new Uri("http://127.0.0.1:62939");
 Console.WriteLine("Please Enter Rate (Seconds)");
 var rate = Convert.ToInt32(Console.ReadLine());
 
@@ -42,44 +42,44 @@ var scenario_delay = Scenario.Create("Network-Bound API (With Delay)", async con
                              during: TimeSpan.FromSeconds(duration))
        );
 
-var scenario_cpu = Scenario.Create("CPU-Bound API", async context =>
-{
-    // you can define and execute any logic here,
-    // for example: send http request, SQL query etc
-    // NBomber will measure how much time it takes to execute your logic
-    using HttpClient client = new();
-    client.BaseAddress = base_uri;
-    await client.GetAsync("/TestCpu");
-    return Response.Ok();
-})
-        //.WithWarmUpDuration(TimeSpan.FromSeconds(10))
-     .WithoutWarmUp()
-    .WithLoadSimulations(
-           Simulation.Inject(rate: rate,
-                             interval: TimeSpan.FromSeconds(interval),
-                             during: TimeSpan.FromSeconds(duration))
-       );
+//var scenario_cpu = Scenario.Create("CPU-Bound API", async context =>
+//{
+//    // you can define and execute any logic here,
+//    // for example: send http request, SQL query etc
+//    // NBomber will measure how much time it takes to execute your logic
+//    using HttpClient client = new();
+//    client.BaseAddress = base_uri;
+//    await client.GetAsync("/TestCpu");
+//    return Response.Ok();
+//})
+//        //.WithWarmUpDuration(TimeSpan.FromSeconds(10))
+//     .WithoutWarmUp()
+//    .WithLoadSimulations(
+//           Simulation.Inject(rate: rate,
+//                             interval: TimeSpan.FromSeconds(interval),
+//                             during: TimeSpan.FromSeconds(duration))
+//       );
 
-var scenario_network = Scenario.Create("Network-Bound API (Without Delay)", async context =>
-{
-    using HttpClient client = new();
-    client.BaseAddress = base_uri;
-    await client.GetAsync("/TestNetwork");
-    return Response.Ok();
-})
-       //.WithWarmUpDuration(TimeSpan.FromSeconds(10))
-    .WithoutWarmUp()   
-    .WithLoadSimulations(
-           Simulation.Inject(rate: rate,
-                             interval: TimeSpan.FromSeconds(interval),
-                             during: TimeSpan.FromSeconds(duration))
-       );
+//var scenario_network = Scenario.Create("Network-Bound API (Without Delay)", async context =>
+//{
+//    using HttpClient client = new();
+//    client.BaseAddress = base_uri;
+//    await client.GetAsync("/TestNetwork");
+//    return Response.Ok();
+//})
+//       //.WithWarmUpDuration(TimeSpan.FromSeconds(10))
+//    .WithoutWarmUp()   
+//    .WithLoadSimulations(
+//           Simulation.Inject(rate: rate,
+//                             interval: TimeSpan.FromSeconds(interval),
+//                             during: TimeSpan.FromSeconds(duration))
+//       );
 
 
     for(int i = 0; i< loop; i++)
     {
         var stats = NBomberRunner
-        .RegisterScenarios(scenario_delay, scenario_cpu, scenario_network)
+        .RegisterScenarios(scenario_delay)
         .WithReportFileName($"fetch_users_report_{test_name}_{i}")
         .WithReportFolder($"fetch_users_report_{test_name}_{i}")
         .WithReportFormats(ReportFormat.Txt, ReportFormat.Csv, ReportFormat.Html, ReportFormat.Md)

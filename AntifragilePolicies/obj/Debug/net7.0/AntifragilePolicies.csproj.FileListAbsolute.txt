@@ -1,0 +1,12 @@
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.csproj.AssemblyReference.cache
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.AssemblyInfoInputs.cache
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.AssemblyInfo.cs
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.csproj.CoreCompileInputs.cache
+C:\Users\B12\Documents\defragile\AntifragilePolicies\bin\Debug\net7.0\AntifragilePolicies.deps.json
+C:\Users\B12\Documents\defragile\AntifragilePolicies\bin\Debug\net7.0\AntifragilePolicies.dll
+C:\Users\B12\Documents\defragile\AntifragilePolicies\bin\Debug\net7.0\AntifragilePolicies.pdb
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.dll
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\refint\AntifragilePolicies.dll
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\AntifragilePolicies.pdb
+C:\Users\B12\Documents\defragile\AntifragilePolicies\obj\Debug\net7.0\ref\AntifragilePolicies.dll

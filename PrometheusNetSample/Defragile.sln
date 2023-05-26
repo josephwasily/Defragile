@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrafficGenerator", "Traffic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerturbationInjector", "PerturbationInjector\PerturbationInjector.csproj", "{4EA9515E-6172-48D7-8365-E8283604B30C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntifragilePolicies", "..\AntifragilePolicies\AntifragilePolicies.csproj", "{7F46BD25-9BCF-4223-B415-79E63DB5BF9C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{4EA9515E-6172-48D7-8365-E8283604B30C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EA9515E-6172-48D7-8365-E8283604B30C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EA9515E-6172-48D7-8365-E8283604B30C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F46BD25-9BCF-4223-B415-79E63DB5BF9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F46BD25-9BCF-4223-B415-79E63DB5BF9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F46BD25-9BCF-4223-B415-79E63DB5BF9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F46BD25-9BCF-4223-B415-79E63DB5BF9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +54,7 @@ Global
 		{CAFFDF7A-44DA-4448-A650-68DF0C566F2C} = {5FFFC330-0E8C-429C-8F7C-AF76044DB029}
 		{47FDA228-2F68-4582-94FC-454BE05CECDF} = {5FFFC330-0E8C-429C-8F7C-AF76044DB029}
 		{4EA9515E-6172-48D7-8365-E8283604B30C} = {5FFFC330-0E8C-429C-8F7C-AF76044DB029}
+		{7F46BD25-9BCF-4223-B415-79E63DB5BF9C} = {5FFFC330-0E8C-429C-8F7C-AF76044DB029}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3AD263D3-2732-4A1A-B317-05A65D76965A}

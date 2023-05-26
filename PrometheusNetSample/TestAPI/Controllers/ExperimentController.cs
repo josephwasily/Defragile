@@ -1,4 +1,4 @@
-﻿
+﻿using AntifragilePolicies.Polly;
 using Microsoft.AspNetCore.Mvc;
 using Polly;
 using Polly.CircuitBreaker;
@@ -9,13 +9,18 @@ namespace PrometheusNetSample.WebApi.Controllers
     [Route("[controller]")]
     public class ExperimentController : ControllerBase
     {
-      
         private readonly ILogger<ExperimentController> _logger;
+        private readonly AdaptiveConcurrencyPolicy _policy;
         private readonly HttpClient _httpClient;
 
-        public ExperimentController(ILogger<ExperimentController> logger, IHttpClientFactory _clientFactor)
+        public ExperimentController(
+            ILogger<ExperimentController> logger,
+            IHttpClientFactory _clientFactor,
+            AdaptiveConcurrencyPolicy policy
+        )
         {
             _logger = logger;
+            _policy = policy;
             _httpClient = _clientFactor.CreateClient("backendHttpClient");
         }
 
@@ -43,9 +48,11 @@ namespace PrometheusNetSample.WebApi.Controllers
             //            return await result.Content.ReadAsStringAsync();
             //            // Handle successful response
             //        }
+            var result = await _policy.ExecuteAndCaptureAsync<HttpResponseMessage>(
+                () => _httpClient.GetAsync("/")
+            );
 
-            var result = await _httpClient.GetAsync("/");
-            return await result.Content.ReadAsStringAsync();
+            return await result.Result.Content.ReadAsStringAsync();
         }
-    } 
+    }
 }

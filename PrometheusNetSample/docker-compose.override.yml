@@ -153,15 +153,15 @@ services:
     expose:
       - 9100
 
-  conntrack_exporter:
-    image: hiveco/conntrack_exporter:latest
-    container_name: conntrack_exporter
-    restart: unless-stopped
-    cap_add:
-     - NET_ADMIN
-    network_mode: "host"
-    ports:
-    - "9318:9318"
+  #conntrack_exporter:
+  #  image: hiveco/conntrack_exporter:latest
+  #  container_name: conntrack_exporter
+  #  restart: unless-stopped
+  #  cap_add:
+  #   - NET_ADMIN
+  #  network_mode: "host"
+  #  ports:
+  #  - "9318:9318"
     #networks:
     #  - myNetwork
 
