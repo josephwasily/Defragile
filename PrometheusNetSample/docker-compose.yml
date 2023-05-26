@@ -4,6 +4,8 @@ services:
   prometheusnetsample.webapi:
     container_name: prometheusnetsample_webapi
     image: ${DOCKER_REGISTRY-}prometheusnetsamplewebapi
+    depends_on: 
+        - prometheus
     build:
       context: .
       dockerfile: TestAPI/Dockerfile
