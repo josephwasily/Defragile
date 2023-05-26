@@ -45,7 +45,7 @@ namespace PerturbationInjector
                   {
                       Console.WriteLine("Press Enter to start");
                       Console.ReadLine();
-                      var toxiproxyUrl = "http://127.0.0.1:8474/proxies/"+ o.Target+"/toxics";
+                      var toxiproxyUrl = "http://16.16.122.234:8474/proxies/" + o.Target+"/toxics";
                       var toxicName = "latency";
                       var stopDate = DateTime.UtcNow.Add(TimeSpan.FromSeconds(o.Duration));
                       var client = new HttpClient();

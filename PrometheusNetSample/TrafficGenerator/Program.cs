@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 
 Console.WriteLine("Please Enter Test Name");
 var test_name = Console.ReadLine();
-var base_uri = new Uri("http://127.0.0.1:62939");
+var base_uri = new Uri("http://16.16.122.234:62939");
 Console.WriteLine("Please Enter Rate (Seconds)");
 var rate = Convert.ToInt32(Console.ReadLine());
 

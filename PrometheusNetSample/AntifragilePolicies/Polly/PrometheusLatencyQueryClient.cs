@@ -14,7 +14,7 @@ namespace AntifragilePolicies.Polly
     public class PrometheusLatencyQueryClient : IPrometheusQueryClient
     {
         private HttpClient _httpClient;
-        string prometheusApiUrl = "http://prometheus:9090/api/v1/query";
+        string prometheusApiUrl = "http://16.16.122.234:9090/api/v1/query";
         public PrometheusLatencyQueryClient(
             )
         {
