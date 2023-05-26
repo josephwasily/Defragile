@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AntifragilePolicies\AntifragilePolicies.csproj" />
+    <ProjectReference Include="..\AntifragilePolicies\AntifragilePolicies.csproj" />
   </ItemGroup>
 
 </Project>
