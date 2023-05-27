@@ -13,12 +13,17 @@ namespace AntifragilePolicies.Polly
 {
     public class PrometheusLatencyQueryClient : IPrometheusQueryClient
     {
+        private Gauge concurrent_limits_guage = Metrics
+              .CreateGauge("concurrency_limits", "Concurrent limits for each outbound service");
+
+
         private HttpClient _httpClient;
         string prometheusApiUrl = "http://16.16.122.234:9090/api/v1/query";
         public PrometheusLatencyQueryClient(
             )
         {
             _httpClient = new HttpClient();
+
         }
         public async Task<double> GetP95Latency(double timeWindowSeconds, string endpoint)
         {
@@ -43,8 +48,7 @@ namespace AntifragilePolicies.Polly
         }
 
         public void LogLimit(int newLimit, string endpoint)
-        {    Gauge concurrent_limits_guage = Metrics
-              .CreateGauge($"concurrency_limits_{endpoint}", "Concurrent limits for each outbound service");
+        {
             concurrent_limits_guage.Set(newLimit);
             
         }
