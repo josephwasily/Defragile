@@ -30,7 +30,7 @@ namespace AntifragilePolicies.Polly
             string query = $"histogram_quantile(0.95, sum by(le) (rate(httpclient_request_duration_seconds_bucket{{client=\"{endpoint}\"}}[{(int)Math.Floor(timeWindowSeconds)}s])))";
             var response = await _httpClient.GetAsync($"{prometheusApiUrl}?query={HttpUtility.UrlEncode(query)}");
             var responseString = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseString);
+            
             var obj = JsonConvert.DeserializeObject<Response>(responseString);  
             if(obj.Status == "success" && obj.Data?.Result?.Length > 0)
             {
