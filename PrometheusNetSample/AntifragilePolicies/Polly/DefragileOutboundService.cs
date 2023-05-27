@@ -42,6 +42,7 @@ namespace AntifragilePolicies.Polly
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Delay(10000);
             //repeat check every 1 minute
             while (true)
             {
