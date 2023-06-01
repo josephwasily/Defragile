@@ -51,24 +51,23 @@ namespace AntifragilePolicies.Polly
 
                 //get endpoint delay last 
                 var latencySeconds = await _prometheusQueryClient.GetP95Latency(_timeWindowSeconds, _endpoint);
+                //get new limit
+                var newLimit = AIMDEngine.UpdateConcurrencyLimit(
+                    _semaphoreSlimDynamic.AvailableSlotsCount,
+                    _semaphoreSlimDynamic.CurrentCount,
+                    _semaphoreSlimDynamic.MinimumSlotsCount,
+                    latencySeconds,
+                    LatencyThresholdSeconds,
+                    _semaphoreSlimDynamic.MaximumSlotsCount,
+                    false,
+                    DecreaseFactor
+                );
+                _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
+
                 if (latencySeconds > LatencyThresholdSeconds)
                 {
-                    //get new limit
-                    var newLimit = AIMDEngine.UpdateConcurrencyLimit(
-                        _semaphoreSlimDynamic.AvailableSlotsCount,
-                        _semaphoreSlimDynamic.CurrentCount,
-                        _semaphoreSlimDynamic.MinimumSlotsCount,
-                        latencySeconds,
-                        LatencyThresholdSeconds,
-                        _semaphoreSlimDynamic.MaximumSlotsCount,
-                        false,
-                        DecreaseFactor
-                    );
-
                     //adjust semaphore
-                    _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
                     _prometheusQueryClient.LogLimit(newLimit, _endpoint);
-
                     Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is above the threshold of {LatencyThresholdSeconds}s");
                 }
                 else

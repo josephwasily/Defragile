@@ -80,12 +80,12 @@ namespace PerturbationInjector
                               var newLatency = (long) Math.Floor(toxic.Attributes.Latency + (change * 1000));
                               Console.WriteLine("Injeting new Latency " + newLatency);
 
-                              //delete toxic
-                               var request = new HttpRequestMessage(HttpMethod.Delete, $"{toxiproxyUrl}/{toxicName}");
-                              var response = await client.SendAsync(request);
+                              ////delete toxic
+                              // var request = new HttpRequestMessage(HttpMethod.Delete, $"{toxiproxyUrl}/{toxicName}");
+                              //var response = await client.SendAsync(request);
 
                               //create toxic
-                              await CreateToxic(newLatency, (long)(newLatency * 0.1), toxiproxyUrl, toxicName);
+                              await UpdateToxic(newLatency, (long)(newLatency * 0.1), toxiproxyUrl, toxicName);
 
                               //log in prometheus 
                               prometheusClient.LogLatency(newLatency, o.Target);
@@ -131,6 +131,28 @@ namespace PerturbationInjector
             
         }
 
+        public static async Task UpdateToxic(long latency, long jitter, string toxiproxyUrl, string toxicName)
+        {
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{toxiproxyUrl}/{toxicName}");
+            var toxic = new Toxic()
+            {
+                Name = toxicName,
+                Stream = "downstream",
+                Toxicity = 1,
+                Type = "latency",
+                Attributes = new Attributes
+                {
+                    Latency = latency,
+                    Jitter = jitter,
+                }
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(toxic), null, "application/json");
+            request.Content = content;
+            var response = await client.SendAsync(request);
+
+        }
         public partial class Toxic
         {
             [JsonProperty("attributes")]
