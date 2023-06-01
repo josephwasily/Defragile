@@ -1,14 +1,22 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using Microsoft.Extensions.Configuration;
 using NBomber.Contracts;
 using NBomber.Contracts.Stats;
 using NBomber.CSharp;
 using Serilog.Sinks.File;
 using System.Net.Http.Headers;
 
+
+// Build a config object, using env vars and JSON providers.
+IConfiguration config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
+    .Build();
+var host = config["Outbound:Host"];
 Console.WriteLine("Please Enter Test Name");
 var test_name = Console.ReadLine();
-var base_uri = new Uri("http://16.16.122.234:62939");
+var base_uri = new Uri($"http://{host}:62939");
 Console.WriteLine("Please Enter Rate (Seconds)");
 var rate = Convert.ToInt32(Console.ReadLine());
 
@@ -23,6 +31,7 @@ var timeout = Convert.ToInt32(Console.ReadLine());
 
 
 Console.WriteLine("Please Enter number of iterations");
+
 var loop = Convert.ToInt32(Console.ReadLine());
 
 var scenario_delay = Scenario.Create("Network-Bound API (With Delay)", async context =>

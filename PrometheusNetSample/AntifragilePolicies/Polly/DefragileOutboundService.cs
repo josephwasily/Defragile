@@ -56,7 +56,7 @@ namespace AntifragilePolicies.Polly
                     //get new limit
                     var newLimit = AIMDEngine.UpdateConcurrencyLimit(
                         _semaphoreSlimDynamic.AvailableSlotsCount,
-                        _semaphoreSlimDynamic.CurrentCount - _semaphoreSlimDynamic.AvailableSlotsCount,
+                        _semaphoreSlimDynamic.CurrentCount,
                         _semaphoreSlimDynamic.MinimumSlotsCount,
                         latencySeconds,
                         LatencyThresholdSeconds,
@@ -74,6 +74,8 @@ namespace AntifragilePolicies.Polly
                 else
                 {
                     Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is below the threshold of {LatencyThresholdSeconds}s");
+                    _prometheusQueryClient.LogLimit(_semaphoreSlimDynamic.CurrentCount, _endpoint);
+
                 }
                 await Task.Delay(_intervalMs + jitterDelay, stoppingToken);
             }

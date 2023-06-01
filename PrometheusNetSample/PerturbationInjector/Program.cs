@@ -3,6 +3,7 @@ using CommandLine;
 using Newtonsoft.Json;
 using System.Runtime;
 using AntifragilePolicies.Polly;
+using Microsoft.Extensions.Configuration;
 
 namespace PerturbationInjector
 {
@@ -38,15 +39,22 @@ namespace PerturbationInjector
 
         static void Main(string[] args)
         {
-            var prometheusClient = new PrometheusLatencyQueryClient();
+            // Build a config object, using env vars and JSON providers.
+            IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .AddEnvironmentVariables()
+                .Build();
+            var hostUrl = config["Outbound:Host"];
+            var prometheusUrl = $"http://{hostUrl}:9090/api/v1/query";
+            var prometheusClient = new PrometheusLatencyQueryClient(prometheusUrl);
 
             Parser.Default.ParseArguments<Options>(args)
                   .WithParsed(async o =>
                   {
                       Console.WriteLine("Press Enter to start");
                       Console.ReadLine();
-                      var toxiproxyUrl = "http://16.16.122.234:8474/proxies/" + o.Target+"/toxics";
-                      var toxicName = "latency";
+                      var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target+"/toxics";
+                      var toxicName = "mynginx";
                       var stopDate = DateTime.UtcNow.Add(TimeSpan.FromSeconds(o.Duration));
                       var client = new HttpClient();
                       var iterations =  (o.Duration / o.Interval); //number of iterations throughout the duration

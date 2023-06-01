@@ -2,6 +2,11 @@ using AntifragilePolicies.Interfaces;
 using AntifragilePolicies.Polly;
 using Prometheus;
 
+// Build a config object, using env vars and JSON providers.
+IConfiguration config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
+    .Build();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-RegisterHttpClient(builder);
+RegisterHttpClient(builder, config);
 
 var app = builder.Build();
 
@@ -33,11 +38,14 @@ app.UseHttpMetrics();
 app.MapControllers();
 app.Run();
 
-static void RegisterHttpClient(WebApplicationBuilder builder)
+
+static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration config)
 {
+    var host = config["Outbound:Host"];
+    var toxiProxyUrl = config["Outbound:ToxiproxyUrl"];
     var clientName = "backendHttpClient";
-    var semaphore = new SemaphoreSlimDynamic(5, 50, 100); //TODO: justify choice of these numbers
-    var prometheusClient = new PrometheusLatencyQueryClient();
+    var semaphore = new SemaphoreSlimDynamic(5, 20, 150); //TODO: justify choice of these numbers
+    var prometheusClient = new PrometheusLatencyQueryClient(host );
     builder.Services.AddSingleton<SemaphoreSlimDynamic>(semaphore);
     builder.Services.AddSingleton<AdaptiveConcurrencyPolicy>((provider) =>
     {
@@ -61,7 +69,7 @@ static void RegisterHttpClient(WebApplicationBuilder builder)
             clientName,
             client =>
             {
-                client.BaseAddress = new Uri("http://mytoxiproxy:22220");
+                client.BaseAddress = new Uri(toxiProxyUrl);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             }
         )
