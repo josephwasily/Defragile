@@ -63,17 +63,16 @@ namespace AntifragilePolicies.Polly
                     DecreaseFactor
                 );
                 _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
+                _prometheusQueryClient.LogLimit(newLimit, _endpoint);
 
                 if (latencySeconds > LatencyThresholdSeconds)
                 {
                     //adjust semaphore
-                    _prometheusQueryClient.LogLimit(newLimit, _endpoint);
                     Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is above the threshold of {LatencyThresholdSeconds}s");
                 }
                 else
                 {
                     Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is below the threshold of {LatencyThresholdSeconds}s");
-                    _prometheusQueryClient.LogLimit(_semaphoreSlimDynamic.CurrentCount, _endpoint);
 
                 }
                 await Task.Delay(_intervalMs + jitterDelay, stoppingToken);
