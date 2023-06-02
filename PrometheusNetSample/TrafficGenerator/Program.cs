@@ -26,10 +26,6 @@ var interval = Convert.ToInt32(Console.ReadLine());
 Console.WriteLine("Please Enter Duration (seconds)");
 var duration = Convert.ToInt32(Console.ReadLine());
 
-Console.WriteLine("Please Enter Experiment Timeout (seconds)");
-var timeout = Convert.ToInt32(Console.ReadLine());
-
-
 Console.WriteLine("Please Enter number of iterations");
 
 var loop = Convert.ToInt32(Console.ReadLine());
@@ -41,7 +37,7 @@ var scenario_delay = Scenario.Create("Network-Bound API (With Delay)", async con
     // NBomber will measure how much time it takes to execute your logic
     using HttpClient client = new();
     client.BaseAddress = base_uri;
-    await client.GetAsync("/Experiment?timeOut="+timeout);
+    await client.GetAsync("/Experiment?timeOut="+0);
     return Response.Ok();
 })
        .WithoutWarmUp()

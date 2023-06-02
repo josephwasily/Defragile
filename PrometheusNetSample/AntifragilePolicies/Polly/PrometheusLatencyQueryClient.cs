@@ -56,6 +56,15 @@ namespace AntifragilePolicies.Polly
             concurrent_limits_guage.Set(newLimit);
             
         }
+        public void LogCurrentRequests(int newLimit)
+        {
+
+            Gauge currentRequests = Metrics
+               .CreateGauge("inflight_requests", "requests currently in flight");
+
+            currentRequests.Set(newLimit);
+
+        }
         public void LogLatency(double latency, string endpoint)
         {
             Gauge latency_injected = Metrics

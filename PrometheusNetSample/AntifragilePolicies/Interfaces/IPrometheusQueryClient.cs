@@ -10,6 +10,7 @@ namespace AntifragilePolicies.Interfaces
     public interface IPrometheusQueryClient
     {
         Task<double> GetP95Latency(double timeWindowSeconds, string endpoint);
+        void LogCurrentRequests(int newLimit);
         void LogLatency(double latency, string endpoint);
         void LogLimit(int newLimit, string endpoint);
     }

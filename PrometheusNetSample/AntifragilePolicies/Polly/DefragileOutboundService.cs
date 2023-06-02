@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 
 namespace AntifragilePolicies.Polly
 {
@@ -48,13 +49,13 @@ namespace AntifragilePolicies.Polly
             {
                  var rand = new Random().Next(1, 10) > 5 ? 1 : -1;
                  var jitterDelay = rand * (_jitterMs);
-
+                var requestsInFlight = _semaphoreSlimDynamic.AvailableSlotsCount - _semaphoreSlimDynamic.CurrentCount;
                 //get endpoint delay last 
                 var latencySeconds = await _prometheusQueryClient.GetP95Latency(_timeWindowSeconds, _endpoint);
                 //get new limit
                 var newLimit = AIMDEngine.UpdateConcurrencyLimit(
                     _semaphoreSlimDynamic.AvailableSlotsCount,
-                    _semaphoreSlimDynamic.CurrentCount,
+                     requestsInFlight,
                     _semaphoreSlimDynamic.MinimumSlotsCount,
                     latencySeconds,
                     LatencyThresholdSeconds,
@@ -63,7 +64,8 @@ namespace AntifragilePolicies.Polly
                     DecreaseFactor
                 );
                 _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
-                _prometheusQueryClient.LogLimit(newLimit, _endpoint);
+                _prometheusQueryClient.LogLimit(_semaphoreSlimDynamic.AvailableSlotsCount, _endpoint);
+                _prometheusQueryClient.LogCurrentRequests(requestsInFlight);
 
                 if (latencySeconds > LatencyThresholdSeconds)
                 {
