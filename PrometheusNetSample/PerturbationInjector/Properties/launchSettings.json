@@ -2,7 +2,7 @@
   "profiles": {
     "PerturbationInjector": {
       "commandName": "Project",
-      "commandLineArgs": " --interval 5 --maximum 15 --duration 360 --target mynginx"
+      "commandLineArgs": " --interval 5 --maximum 5 --duration 360 --target mynginx"
     }
   }
 }

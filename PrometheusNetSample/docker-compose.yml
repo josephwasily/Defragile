@@ -6,6 +6,7 @@ services:
     image: ${DOCKER_REGISTRY-}prometheusnetsamplewebapi
     depends_on: 
         - prometheus
+        - mytoxiproxy
     build:
       context: .
       dockerfile: TestAPI/Dockerfile
