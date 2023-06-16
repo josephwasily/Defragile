@@ -97,7 +97,7 @@ services:
     links:
       - prometheus:prometheus
     volumes:
-      - docker_data:/var/lib/grafana
+      - ./data/grafana:/var/lib/grafana
     depends_on:
       - prometheus
     #networks:
