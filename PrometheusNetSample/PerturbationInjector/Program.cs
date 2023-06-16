@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System.Runtime;
 using AntifragilePolicies.Polly;
 using Microsoft.Extensions.Configuration;
+using AntifragilePolicies.Models;
 
 namespace PerturbationInjector
 {
@@ -47,6 +48,7 @@ namespace PerturbationInjector
             var hostUrl = config["Outbound:Host"];
             var prometheusUrl = $"http://{hostUrl}:9090/api/v1/query";
             var prometheusClient = new PrometheusLatencyQueryClient(prometheusUrl);
+            var apiUrl = $"http://{hostUrl}:62939";
 
             Parser.Default.ParseArguments<Options>(args)
                   .WithParsed(async o =>
@@ -56,7 +58,8 @@ namespace PerturbationInjector
                       var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target+"/toxics";
                       var toxicName = "mynginx";
                       var stopDate = DateTime.UtcNow.Add(TimeSpan.FromSeconds(o.Duration));
-                      var client = new HttpClient();
+                      var toxiProxyClient = new HttpClient();
+                      var apiClient = new HttpClient();
                       var iterations =  (o.Duration / o.Interval); //number of iterations throughout the duration
                       double change = (o.Maximum / (iterations / 2.0 )); //change in latency per iteration
                       
@@ -67,7 +70,7 @@ namespace PerturbationInjector
                           
                           Console.WriteLine("Updating ToxiProxy ");
                           //call toxiproxy api 
-                          var toxics = await GetToxics(toxiproxyUrl, client);
+                          var toxics = await GetToxics(toxiproxyUrl, toxiProxyClient);
                           if (toxics.Any())
                           {
                               //get toxic 
@@ -88,7 +91,10 @@ namespace PerturbationInjector
                               await UpdateToxic(newLatency, (long)(newLatency * 0.1), toxiproxyUrl, toxicName);
 
                               //log in prometheus 
-                              prometheusClient.LogLatency(newLatency, o.Target);
+                              await LogLatency(newLatency, apiUrl);
+
+
+
                           }
                           else
                           {
@@ -146,6 +152,21 @@ namespace PerturbationInjector
                     Latency = latency,
                     Jitter = jitter,
                 }
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(toxic), null, "application/json");
+            request.Content = content;
+            var response = await client.SendAsync(request);
+
+        }
+        public static async Task LogLatency(double latency, string apiUrl)
+        {
+            var client = new HttpClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{apiUrl}/LatencyRecord");
+            var toxic = new LatencyModel
+            {
+                Latency = latency,
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(toxic), null, "application/json");

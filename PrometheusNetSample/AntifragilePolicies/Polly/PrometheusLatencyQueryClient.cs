@@ -65,10 +65,10 @@ namespace AntifragilePolicies.Polly
             currentRequests.Set(newLimit);
 
         }
-        public void LogLatency(double latency, string endpoint)
+        public void LogLatency(double latency)
         {
             Gauge latency_injected = Metrics
-              .CreateGauge($"injected_latency_{endpoint}", "Injected Latency to the endpoint throught toxiproxy");
+              .CreateGauge($"injected_latency", "Injected Latency to the endpoint throught toxiproxy");
             latency_injected.Set(latency);
 
         }
