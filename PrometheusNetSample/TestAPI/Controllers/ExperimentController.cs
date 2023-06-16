@@ -25,7 +25,7 @@ namespace PrometheusNetSample.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<string> Get(bool withPolicy)
+        public async Task<ActionResult<string>> Get(bool withPolicy)
         {
             //        var circuitBreakerPolicy = Policy.Handle<Exception>()
             //.AdvancedCircuitBreaker(
@@ -54,18 +54,18 @@ namespace PrometheusNetSample.WebApi.Controllers
                 var result = await
               _policy.ExecuteAndCaptureAsync<HttpResponseMessage>(
               () =>
-              _httpClient.GetAsync("/")
-          );
+              _httpClient.GetAsync("/"));
+
                 if (result.Outcome == OutcomeType.Failure)
                 {
-                    throw new Exception("Concurrency Limits Exceeded");
+                    return BadRequest("Concurrency Limits Exceeded");
                 }
-                return await result.Result.Content.ReadAsStringAsync();
+                return Ok(await result.Result.Content.ReadAsStringAsync());
             }
             else
             {
                 var result = await _httpClient.GetAsync("/");
-                return await result.Content.ReadAsStringAsync();
+                return Ok(await result.Content.ReadAsStringAsync());
 
             }
 
