@@ -57,6 +57,11 @@ services:
         reservations:
           cpus: '0.25'
           memory: 250M
+    x-develop:
+        watch:
+        - action: rebuild
+          path: './PrometheusNetSample.WebApi'
+
   prometheus:       
     image: prom/prometheus:latest
     container_name: prometheusnetsample_prometheus
@@ -92,7 +97,7 @@ services:
     links:
       - prometheus:prometheus
     volumes:
-      - ./data/grafana:/var/lib/grafana
+      - docker_data/grafana:/var/lib/grafana
     depends_on:
       - prometheus
     #networks:
