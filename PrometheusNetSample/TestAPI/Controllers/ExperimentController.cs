@@ -25,7 +25,7 @@ namespace PrometheusNetSample.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<string> Get(long? timeOut)
+        public async Task<string> Get(bool withPolicy)
         {
             //        var circuitBreakerPolicy = Policy.Handle<Exception>()
             //.AdvancedCircuitBreaker(
@@ -48,11 +48,25 @@ namespace PrometheusNetSample.WebApi.Controllers
             //            return await result.Content.ReadAsStringAsync();
             //            // Handle successful response
             //        }
-            var result = await _policy.ExecuteAndCaptureAsync<HttpResponseMessage>(
-                () => _httpClient.GetAsync("/")
-            );
 
-            return await result.Result.Content.ReadAsStringAsync();
+            if(withPolicy)
+            {
+                var result = await
+              _policy.ExecuteAndCaptureAsync<HttpResponseMessage>(
+              () =>
+              _httpClient.GetAsync("/")
+          );
+
+                return await result.Result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                var result = await _httpClient.GetAsync("/");
+                return await result.Content.ReadAsStringAsync();
+
+            }
+
         }
+
     }
 }
