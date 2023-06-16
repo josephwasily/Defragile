@@ -1,4 +1,5 @@
 ﻿using Polly;
+using Polly.Bulkhead;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,19 +24,33 @@ namespace AntifragilePolicies.Polly
             bool continueOnCapturedContext
         )
         {
-            await _adjustableSemaphore
-                .WaitAsync(cancellationToken)
-                .ConfigureAwait(continueOnCapturedContext);
 
+            if (!_adjustableSemaphore.Wait(TimeSpan.Zero, cancellationToken))
+            {
+                throw new BulkheadRejectedException(); //TODO: create custom exception
+            }
             try
             {
-                return await action(context, cancellationToken)
-                    .ConfigureAwait(continueOnCapturedContext);
+                await _adjustableSemaphore
+                   .WaitAsync(cancellationToken)
+                   .ConfigureAwait(continueOnCapturedContext);
+                try
+                {
+                    return await action(context, cancellationToken)
+                        .ConfigureAwait(continueOnCapturedContext);
+                }
+                finally
+                {
+                    _adjustableSemaphore.Release();
+                }
+
             }
             finally
             {
                 _adjustableSemaphore.Release();
             }
+
+
         }
     }
 }
