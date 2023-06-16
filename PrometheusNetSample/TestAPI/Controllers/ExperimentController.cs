@@ -58,7 +58,7 @@ namespace PrometheusNetSample.WebApi.Controllers
           );
                 if (result.Outcome == OutcomeType.Failure)
                 {
-                    throw new Exception("Failed");
+                    throw new Exception("Concurrency Limits Exceeded");
                 }
                 return await result.Result.Content.ReadAsStringAsync();
             }
