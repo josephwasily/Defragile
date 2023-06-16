@@ -44,7 +44,7 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
     var host = config["Outbound:Host"];
     var toxiProxyUrl = config["Outbound:ToxiproxyUrl"];
     var clientName = "backendHttpClient";
-    var semaphore = new SemaphoreSlimDynamic(5, 20, 150); //TODO: justify choice of these numbers
+    var semaphore = new SemaphoreSlimDynamic(2, 10, 30); //TODO: justify choice of these numbers
     var prometheusClient = new PrometheusLatencyQueryClient($"http://{host}:9090/api/v1/query" );
     builder.Services.AddSingleton<SemaphoreSlimDynamic>(semaphore);
     builder.Services.AddSingleton<AdaptiveConcurrencyPolicy>((provider) =>
