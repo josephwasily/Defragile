@@ -24,32 +24,21 @@ namespace AntifragilePolicies.Polly
             bool continueOnCapturedContext
         )
         {
+            var obtainedLock = await _adjustableSemaphore.WaitAsync(TimeSpan.Zero, cancellationToken).ConfigureAwait(continueOnCapturedContext);
 
-            if (!_adjustableSemaphore.Wait(TimeSpan.Zero, cancellationToken))
+            if (!obtainedLock)
             {
                 throw new BulkheadRejectedException(); //TODO: create custom exception
             }
             try
             {
-                await _adjustableSemaphore
-                   .WaitAsync(cancellationToken)
-                   .ConfigureAwait(continueOnCapturedContext);
-                try
-                {
-                    return await action(context, cancellationToken)
-                        .ConfigureAwait(continueOnCapturedContext);
-                }
-                finally
-                {
-                    _adjustableSemaphore.Release();
-                }
-
+                return await action(context, cancellationToken)
+                    .ConfigureAwait(continueOnCapturedContext);
             }
             finally
             {
                 _adjustableSemaphore.Release();
             }
-
 
         }
     }
