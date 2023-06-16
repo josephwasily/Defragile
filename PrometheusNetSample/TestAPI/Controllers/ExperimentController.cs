@@ -56,7 +56,10 @@ namespace PrometheusNetSample.WebApi.Controllers
               () =>
               _httpClient.GetAsync("/")
           );
-
+                if (result.Outcome == OutcomeType.Failure)
+                {
+                    throw new Exception("Failed");
+                }
                 return await result.Result.Content.ReadAsStringAsync();
             }
             else
