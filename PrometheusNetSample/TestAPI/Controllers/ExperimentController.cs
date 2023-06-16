@@ -1,5 +1,4 @@
-﻿using AntifragilePolicies.Models;
-using AntifragilePolicies.Polly;
+﻿using AntifragilePolicies.Polly;
 using Microsoft.AspNetCore.Mvc;
 using Polly;
 using Polly.CircuitBreaker;
@@ -8,22 +7,65 @@ namespace PrometheusNetSample.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class LatencyRecordController : ControllerBase
+    public class ExperimentController : ControllerBase
     {
-        private readonly PrometheusLatencyQueryClient _latencyQueryClient;
+        private readonly ILogger<ExperimentController> _logger;
+        private readonly AdaptiveConcurrencyPolicy _policy;
+        private readonly HttpClient _httpClient;
 
-        public LatencyRecordController(
-            PrometheusLatencyQueryClient latencyQueryClient
-              )
+        public ExperimentController(
+            ILogger<ExperimentController> logger,
+            IHttpClientFactory _clientFactor,
+            AdaptiveConcurrencyPolicy policy
+        )
         {
-            _latencyQueryClient = latencyQueryClient;
+            _logger = logger;
+            _policy = policy;
+            _httpClient = _clientFactor.CreateClient("backendHttpClient");
         }
 
-        [HttpPost]
-        public void Post(LatencyModel model)
+        [HttpGet]
+        public async Task<string> Get(bool withPolicy)
         {
+            //        var circuitBreakerPolicy = Policy.Handle<Exception>()
+            //.AdvancedCircuitBreaker(
+            //    failureThreshold: 0.5, // 50% failure rate
+            //    samplingDuration: TimeSpan.FromMinutes(1), // Last 1 minute
+            //    minimumThroughput: 10, // Minimum number of requests before evaluating circuit
+            //    durationOfBreak: TimeSpan.FromSeconds(30)); // Break for 30 seconds
 
-            _latencyQueryClient.LogLatency(model.Latency);
+            //        var timeoutPolicy = Policy.TimeoutAsync(TimeSpan.FromSeconds(1));
+
+            //        var httpClient = new HttpClient();
+
+            //        //var policy = Policy.Wrap( circuitBreakerPolicy, timeoutPolicy);
+
+            //        // Usage example
+            //        try
+            //        {
+            //            var result = await timeoutPolicy.ExecuteAsync(
+            //                () => _httpClient.GetAsync("/"));
+            //            return await result.Content.ReadAsStringAsync();
+            //            // Handle successful response
+            //        }
+
+            if (withPolicy)
+            {
+                var result = await
+              _policy.ExecuteAndCaptureAsync<HttpResponseMessage>(
+              () =>
+              _httpClient.GetAsync("/")
+          );
+
+                return await result.Result.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                var result = await _httpClient.GetAsync("/");
+                return await result.Content.ReadAsStringAsync();
+
+            }
+
         }
 
     }
