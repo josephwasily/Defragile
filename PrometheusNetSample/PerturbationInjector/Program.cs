@@ -5,6 +5,7 @@ using System.Runtime;
 using AntifragilePolicies.Polly;
 using Microsoft.Extensions.Configuration;
 using AntifragilePolicies.Models;
+using System.Threading;
 
 namespace PerturbationInjector
 {
@@ -26,19 +27,15 @@ namespace PerturbationInjector
 
     internal class Program
     {
-        public static async Task RunInBackground(TimeSpan tick, DateTimeOffset stopDate, Action action)
-        {
-            var periodicTimer = new PeriodicTimer(tick);
-            while ( DateTime.UtcNow < stopDate &&   await periodicTimer.WaitForNextTickAsync() )
-            {
-                action();
-            }
-            Task.Delay(1000).Wait();
-            Console.WriteLine("Ending the Perturbation");
+        //public static async Task RunInBackground(TimeSpan tick, DateTimeOffset stopDate, Action action)
+        //{
+       
+        //    Task.Delay(1000).Wait();
+        //    Console.WriteLine("Ending the Perturbation");
 
-        }
+        //}
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // Build a config object, using env vars and JSON providers.
             IConfiguration config = new ConfigurationBuilder()
@@ -50,60 +47,62 @@ namespace PerturbationInjector
             var prometheusClient = new PrometheusLatencyQueryClient(prometheusUrl);
             var apiUrl = $"http://{hostUrl}:62939";
 
-            Parser.Default.ParseArguments<Options>(args)
-                  .WithParsed(async o =>
-                  {
-                      Console.WriteLine("Press Enter to start");
-                      Console.ReadLine();
-                      var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target+"/toxics";
-                      var toxicName = "mynginx";
-                      var stopDate = DateTime.UtcNow.Add(TimeSpan.FromSeconds(o.Duration));
-                      var toxiProxyClient = new HttpClient();
-                      var apiClient = new HttpClient();
-                      var iterations =  (o.Duration / o.Interval); //number of iterations throughout the duration
-                      double change = (o.Maximum / (iterations / 2.0 )); //change in latency per iteration
-                      
-                      Console.WriteLine($"Injecting latency to proxy: {o.Target} {change}s every {o.Interval}s ");
+            var o = Parser.Default.ParseArguments<Options>(args).Value;
 
-                      RunInBackground(TimeSpan.FromSeconds(o.Interval), stopDate, async () =>
-                      {
-                          
-                          Console.WriteLine("Updating ToxiProxy ");
-                          //call toxiproxy api 
-                          var toxics = await GetToxics(toxiproxyUrl, toxiProxyClient);
-                          if (toxics.Any())
-                          {
-                              //get toxic 
-                              var toxic = toxics.First();
+            var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target + "/toxics";
+            var toxicName = "mynginx";
+            var maximumDuration = TimeSpan.FromSeconds(o.Duration / 5);
 
-                              if((toxic.Attributes.Latency / 1000) >= o.Maximum && change > 0)
-                              {
-                                  change *= -1;
-                              }
-                              var newLatency = (long) Math.Floor(toxic.Attributes.Latency + (change * 1000));
-                              Console.WriteLine("Injeting new Latency " + newLatency);
+            var stopDate = DateTime.UtcNow
+                        .Add(TimeSpan.FromSeconds(o.Duration))
+                        .Add(maximumDuration);
 
-                              ////delete toxic
-                              // var request = new HttpRequestMessage(HttpMethod.Delete, $"{toxiproxyUrl}/{toxicName}");
-                              //var response = await client.SendAsync(request);
+            var toxiProxyClient = new HttpClient();
+            var apiClient = new HttpClient();
+            var iterations = (o.Duration / o.Interval); //number of iterations throughout the duration
+            double change = (o.Maximum / (iterations / 2.0)); //change in latency per iteration
 
-                              //create toxic
-                              await UpdateToxic(newLatency, (long)(newLatency * 0.1), toxiproxyUrl, toxicName);
+            Console.WriteLine($"Injecting latency to proxy: {o.Target} {change}s every {o.Interval}s ");
 
-                              //log in prometheus 
-                              await LogLatency(newLatency, apiUrl);
+            var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(o.Interval));
 
+            while (DateTime.UtcNow < stopDate && await periodicTimer.WaitForNextTickAsync())
+            {
+                Console.WriteLine("Updating ToxiProxy ");
+                //call toxiproxy api 
+                var toxics = await GetToxics(toxiproxyUrl, toxiProxyClient);
+                if (toxics.Any())
+                {
+                    //get toxic 
+                    var toxic = toxics.First();
 
+                    if ((toxic.Attributes.Latency / 1000) >= o.Maximum && change > 0)
+                    {
+                        change *= -1;
 
-                          }
-                          else
-                          {
-                              Console.WriteLine("Injecting Initial Latency " + (change*1000));
-                              await CreateToxic((long)Math.Floor(change*1000), (long)((change) * 0.1), toxiproxyUrl, toxicName);
-                          }
-                      }).Wait() ;
+                        //keep the latency at the maximum for a while (20% of the duration)
+                        await Task.Delay(maximumDuration);
+                    }
+                    var newLatency = (long)Math.Floor(toxic.Attributes.Latency + (change * 1000));
+                    Console.WriteLine("Injeting new Latency " + newLatency);
 
-                  });
+                    ////delete toxic
+                    // var request = new HttpRequestMessage(HttpMethod.Delete, $"{toxiproxyUrl}/{toxicName}");
+                    //var response = await client.SendAsync(request);
+
+                    //create toxic
+                    await UpdateToxic(newLatency, (long)(newLatency * 0.1), toxiproxyUrl, toxicName);
+
+                    //log in prometheus 
+                    await LogLatency(newLatency, apiUrl);
+
+                }
+                else
+                {
+                    Console.WriteLine("Injecting Initial Latency " + (change * 1000));
+                    await CreateToxic((long)Math.Floor(change * 1000), (long)((change) * 0.1), toxiproxyUrl, toxicName);
+                }
+            }
         }
 
         public static async Task<List<Toxic>> GetToxics(string toxiproxyUrl, HttpClient client)
