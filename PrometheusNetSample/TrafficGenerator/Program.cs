@@ -37,7 +37,7 @@ var scenario_delay = Scenario.Create("Network-Bound API (With Delay)", async con
     // NBomber will measure how much time it takes to execute your logic
     using HttpClient client = new();
     client.BaseAddress = base_uri;
-    await client.GetAsync("/Experiment?timeOut="+0);
+    await client.GetAsync("/Experiment?withPolicy=false");
     return Response.Ok();
 })
        .WithoutWarmUp()
