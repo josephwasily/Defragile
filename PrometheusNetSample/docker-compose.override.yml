@@ -97,7 +97,7 @@ services:
     links:
       - prometheus:prometheus
     volumes:
-      - docker_data/grafana:/var/lib/grafana
+      - docker_data:/var/lib/grafana
     depends_on:
       - prometheus
     #networks:
@@ -195,5 +195,6 @@ services:
 #          config:
 #            - subnet: 192.168.55.0/16
 #              gateway: 192.168.55.1
-
+volumes:
+    docker_data:
 
