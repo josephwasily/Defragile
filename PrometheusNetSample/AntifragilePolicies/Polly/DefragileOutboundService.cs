@@ -60,7 +60,13 @@ namespace AntifragilePolicies.Polly
 
                 double latencySeconds = GetLatency(95) / 1000.0;
 
-                if(latencySeconds > 0)
+                //reset histogram for next interval
+                lock (histogramLock)
+                {
+                    _longHistogram.Reset();
+                }
+
+                if (latencySeconds > 0)
                 {
                     var newLimit = AIMDEngine.UpdateConcurrencyLimit(
                  _semaphoreSlimDynamic.AvailableSlotsCount,
@@ -80,11 +86,11 @@ namespace AntifragilePolicies.Polly
                     if (latencySeconds > LatencyThresholdSeconds)
                     {
                         //adjust semaphore
-                        Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is above the threshold of {LatencyThresholdSeconds}s");
+                        Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}s, which is above the threshold of {LatencyThresholdSeconds}s");
                     }
                     else
                     {
-                        Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is below the threshold of {LatencyThresholdSeconds}s");
+                        Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}s, which is below the threshold of {LatencyThresholdSeconds}s");
 
                     }
                 }
