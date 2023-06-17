@@ -37,18 +37,17 @@ namespace AntifragilePolicies.Polly
             }
             try
             {
-                long startTimestamp = Stopwatch.GetTimestamp();
+                Stopwatch stopwatch = Stopwatch.StartNew();
 
                 //Execute some action to be measured
                 var actionResult =  await action(context, cancellationToken)
                    .ConfigureAwait(continueOnCapturedContext);
 
-                long elapsed = Stopwatch.GetTimestamp() - startTimestamp;
+                stopwatch.Stop();
 
                 lock (histogramLock)
                 {
-                    _longHistogram.RecordValue(elapsed);
-
+                    _longHistogram.RecordValue(stopwatch.ElapsedMilliseconds);
                 }
                 return actionResult;
                
