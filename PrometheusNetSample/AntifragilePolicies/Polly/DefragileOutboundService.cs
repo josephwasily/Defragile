@@ -60,32 +60,35 @@ namespace AntifragilePolicies.Polly
 
                 double latencySeconds = GetLatency(95) / 1000.0;
 
-                //get new limit
-                var newLimit = AIMDEngine.UpdateConcurrencyLimit(
-                    _semaphoreSlimDynamic.AvailableSlotsCount,
-                     requestsInFlight,
-                    _semaphoreSlimDynamic.MinimumSlotsCount,
-                    latencySeconds,
-                    LatencyThresholdSeconds,
-                    _semaphoreSlimDynamic.MaximumSlotsCount,
-                    false,
-                    DecreaseFactor
-                );
-                _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
-                _prometheusQueryClient.LogLimit(_semaphoreSlimDynamic.AvailableSlotsCount, _endpoint);
-                _prometheusQueryClient.LogCurrentRequests(requestsInFlight);
-                _prometheusQueryClient.LogActualLatency(latencySeconds);
-
-                if (latencySeconds > LatencyThresholdSeconds)
+                if(latencySeconds > 0)
                 {
-                    //adjust semaphore
-                    Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is above the threshold of {LatencyThresholdSeconds}s");
-                }
-                else
-                {
-                    Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is below the threshold of {LatencyThresholdSeconds}s");
+                    var newLimit = AIMDEngine.UpdateConcurrencyLimit(
+                 _semaphoreSlimDynamic.AvailableSlotsCount,
+                  requestsInFlight,
+                 _semaphoreSlimDynamic.MinimumSlotsCount,
+                 latencySeconds,
+                 LatencyThresholdSeconds,
+                 _semaphoreSlimDynamic.MaximumSlotsCount,
+                 false,
+                 DecreaseFactor
+             );
+                    _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
+                    _prometheusQueryClient.LogLimit(_semaphoreSlimDynamic.AvailableSlotsCount, _endpoint);
+                    _prometheusQueryClient.LogCurrentRequests(requestsInFlight);
+                    _prometheusQueryClient.LogActualLatency(latencySeconds);
 
+                    if (latencySeconds > LatencyThresholdSeconds)
+                    {
+                        //adjust semaphore
+                        Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is above the threshold of {LatencyThresholdSeconds}s");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Latency for endpoint {_endpoint} is {latencySeconds}ms, which is below the threshold of {LatencyThresholdSeconds}s");
+
+                    }
                 }
+             
                 await Task.Delay(_intervalMs + jitterDelay, stoppingToken);
             }
         }
@@ -95,8 +98,16 @@ namespace AntifragilePolicies.Polly
             //get 95 percentile latency from hdrhistogram 
             lock (histogramLock)
             {
-                var latency = _longHistogram.GetValueAtPercentile(percentile);
-                return latency;
+                try
+                {
+                    var latency = _longHistogram.GetValueAtPercentile(percentile);
+                    return latency;
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    return 0;
+                }
+
             }
         
         }
