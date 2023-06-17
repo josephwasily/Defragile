@@ -51,15 +51,15 @@ namespace PerturbationInjector
 
             var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target + "/toxics";
             var toxicName = "mynginx";
-            var maximumDuration = TimeSpan.FromSeconds(o.Duration / 5);
+            
+            var stayAtPeakDuration = TimeSpan.FromSeconds(o.Duration / 5);
 
             var stopDate = DateTime.UtcNow
-                        .Add(TimeSpan.FromSeconds(o.Duration))
-                        .Add(maximumDuration);
+                        .Add(TimeSpan.FromSeconds(o.Duration));
 
             var toxiProxyClient = new HttpClient();
             var apiClient = new HttpClient();
-            var iterations = (o.Duration / o.Interval); //number of iterations throughout the duration
+            var iterations = ( (o.Duration - (o.Duration / 5)) / o.Interval); //number of iterations throughout the duration
             double change = (o.Maximum / (iterations / 2.0)); //change in latency per iteration
 
             Console.WriteLine($"Injecting latency to proxy: {o.Target} {change}s every {o.Interval}s ");
@@ -81,7 +81,7 @@ namespace PerturbationInjector
                         change *= -1;
 
                         //keep the latency at the maximum for a while (20% of the duration)
-                        await Task.Delay(maximumDuration);
+                        await Task.Delay(stayAtPeakDuration);
                     }
                     var newLatency = (long)Math.Floor(toxic.Attributes.Latency + (change * 1000));
                     Console.WriteLine("Injeting new Latency " + newLatency);
