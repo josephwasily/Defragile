@@ -24,7 +24,7 @@ namespace PrometheusNetSample.WebApi.Controllers
         public void Post(LatencyModel model)
         {
 
-            _latencyQueryClient.LogLatency(model.Latency);
+            _latencyQueryClient.LogInjectedLatency(model.Latency);
         }
 
     }

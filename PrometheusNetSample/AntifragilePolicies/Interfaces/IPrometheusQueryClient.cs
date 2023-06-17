@@ -11,7 +11,8 @@ namespace AntifragilePolicies.Interfaces
     {
         Task<double> GetP95Latency(double timeWindowSeconds, string endpoint);
         void LogCurrentRequests(int newLimit);
-        void LogLatency(double latency);
+        void LogInjectedLatency(double latency);
+        void LogActualLatency(double latencySeconds);
         void LogLimit(int newLimit, string endpoint);
     }
 }

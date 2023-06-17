@@ -1,4 +1,5 @@
 ﻿using AntifragilePolicies.Interfaces;
+using HdrHistogram;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic;
@@ -16,16 +17,19 @@ namespace AntifragilePolicies.Polly
     {
         private readonly IPrometheusQueryClient _prometheusQueryClient;
         private readonly SemaphoreSlimDynamic _semaphoreSlimDynamic;
+        private readonly LongHistogram _longHistogram;
         private readonly string _endpoint;
         private readonly int _intervalMs;
         private readonly int _jitterMs;
         private readonly double _timeWindowSeconds;
         private const int LatencyThresholdSeconds = 2;
         private const double DecreaseFactor = 0.75;
+        private readonly object histogramLock = new object ();
     
         public DefragileOutboundService(
             IPrometheusQueryClient prometheusQueryClient,
             SemaphoreSlimDynamic semaphoreSlimDynamic,
+            LongHistogram longHistogram,
             string endpoint,
             int intervalMs,
             int jitterMs,
@@ -35,6 +39,7 @@ namespace AntifragilePolicies.Polly
         {
             _prometheusQueryClient = prometheusQueryClient;
             _semaphoreSlimDynamic = semaphoreSlimDynamic;
+            _longHistogram = longHistogram;
             _endpoint = endpoint;
             _intervalMs = intervalMs;
             _jitterMs = jitterMs;
@@ -51,7 +56,10 @@ namespace AntifragilePolicies.Polly
                  var jitterDelay = rand * (_jitterMs);
                 var requestsInFlight = _semaphoreSlimDynamic.AvailableSlotsCount - _semaphoreSlimDynamic.CurrentCount;
                 //get endpoint delay last 
-                var latencySeconds = await _prometheusQueryClient.GetP95Latency(_timeWindowSeconds, _endpoint);
+                //var latencySeconds = await _prometheusQueryClient.GetP95Latency(_timeWindowSeconds, _endpoint);
+
+                double latencySeconds = GetLatency(95) / 1000.0;
+
                 //get new limit
                 var newLimit = AIMDEngine.UpdateConcurrencyLimit(
                     _semaphoreSlimDynamic.AvailableSlotsCount,
@@ -66,6 +74,7 @@ namespace AntifragilePolicies.Polly
                 _semaphoreSlimDynamic.AdjustConcurrency(newLimit);
                 _prometheusQueryClient.LogLimit(_semaphoreSlimDynamic.AvailableSlotsCount, _endpoint);
                 _prometheusQueryClient.LogCurrentRequests(requestsInFlight);
+                _prometheusQueryClient.LogActualLatency(latencySeconds);
 
                 if (latencySeconds > LatencyThresholdSeconds)
                 {
@@ -79,6 +88,17 @@ namespace AntifragilePolicies.Polly
                 }
                 await Task.Delay(_intervalMs + jitterDelay, stoppingToken);
             }
+        }
+
+        private double GetLatency(double percentile)
+        {
+            //get 95 percentile latency from hdrhistogram 
+            lock (histogramLock)
+            {
+                var latency = _longHistogram.GetValueAtPercentile(percentile);
+                return latency;
+            }
+        
         }
     }
 }

@@ -1,5 +1,6 @@
 using AntifragilePolicies.Interfaces;
 using AntifragilePolicies.Polly;
+using HdrHistogram;
 using Prometheus;
 
 // Build a config object, using env vars and JSON providers.
@@ -46,11 +47,16 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
     var clientName = "backendHttpClient";
     var semaphore = new SemaphoreSlimDynamic(2, 10, 30); //TODO: justify choice of these numbers
     var prometheusClient = new PrometheusLatencyQueryClient($"http://{host}:9090/api/v1/query" );
+    
+    // A Histogram covering the range from ~466 nanoseconds to 1 hour (3,600,000,000,000 ns) with a resolution of 3 significant figures:
+    var histogram = new LongHistogram(TimeStamp.Hours(1), 3);
+
     builder.Services.AddSingleton<SemaphoreSlimDynamic>(semaphore);
     builder.Services.AddSingleton<AdaptiveConcurrencyPolicy>((provider) =>
     {
         return new AdaptiveConcurrencyPolicy(
-                       semaphore);
+                       semaphore,
+                       histogram);
     });
     builder.Services.AddSingleton<IPrometheusQueryClient>(prometheusClient);
     builder.Services.AddHostedService<DefragileOutboundService>(x =>
@@ -58,6 +64,7 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
         return new DefragileOutboundService(
             prometheusClient,
             semaphore,
+            histogram,
             clientName,
             (int)TimeSpan.FromSeconds(2).TotalMilliseconds,
             (int)TimeSpan.FromSeconds(0.5).TotalMilliseconds,

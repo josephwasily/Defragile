@@ -1,7 +1,9 @@
-﻿using Polly;
+﻿using HdrHistogram;
+using Polly;
 using Polly.Bulkhead;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,10 +13,13 @@ namespace AntifragilePolicies.Polly
     public class AdaptiveConcurrencyPolicy : AsyncPolicy
     {
         private readonly SemaphoreSlimDynamic _adjustableSemaphore;
-
-        public AdaptiveConcurrencyPolicy(SemaphoreSlimDynamic adjustableSemaphore)
+        private readonly object histogramLock = new object();
+        private readonly LongHistogram _longHistogram;
+        public AdaptiveConcurrencyPolicy(SemaphoreSlimDynamic adjustableSemaphore, LongHistogram longHistogram)
         {
             _adjustableSemaphore = adjustableSemaphore;
+            _longHistogram = longHistogram;
+
         }
 
         protected override async Task<TResult> ImplementationAsync<TResult>(
@@ -32,8 +37,21 @@ namespace AntifragilePolicies.Polly
             }
             try
             {
-                return await action(context, cancellationToken)
-                    .ConfigureAwait(continueOnCapturedContext);
+                long startTimestamp = Stopwatch.GetTimestamp();
+
+                //Execute some action to be measured
+                var actionResult =  await action(context, cancellationToken)
+                   .ConfigureAwait(continueOnCapturedContext);
+
+                long elapsed = Stopwatch.GetTimestamp() - startTimestamp;
+
+                lock (histogramLock)
+                {
+                    _longHistogram.RecordValue(elapsed);
+
+                }
+                return actionResult;
+               
             }
             finally
             {
