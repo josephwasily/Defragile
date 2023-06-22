@@ -113,7 +113,7 @@ namespace PerturbationInjector
                                 // NBomber will measure how much time it takes to execute your logic
                                 using HttpClient client = new();
                                 client.BaseAddress = new Uri(apiUrl);
-                                await client.GetAsync("/Experiment?withPolicy=true");
+                                await client.GetAsync("/Experiment?withPolicy=true&isAsync=true");
                                 return NBomber.CSharp.Response.Ok();
                             }
                         )
