@@ -20,12 +20,12 @@ namespace PrometheusNetSample.WebApi.Controllers
         )
         {
             _logger = logger;
-            _policy = policy;
+            _policy = policy;   
             _httpClient = _clientFactor.CreateClient("backendHttpClient");
         }
 
         [HttpGet]
-        public async Task<ActionResult<string>> Get(bool withPolicy)
+        public async Task<ActionResult<string>> Get(bool withPolicy, bool isAsync)
         {
             //        var circuitBreakerPolicy = Policy.Handle<Exception>()
             //.AdvancedCircuitBreaker(
@@ -64,8 +64,17 @@ namespace PrometheusNetSample.WebApi.Controllers
             }
             else
             {
-                var result = await _httpClient.GetAsync("/");
-                return Ok(await result.Content.ReadAsStringAsync());
+                if (isAsync)
+                {
+                    var result = await _httpClient.GetAsync("/");
+                    return Ok(await result.Content.ReadAsStringAsync());
+                }
+                else
+                {
+                    var result =  _httpClient.GetAsync("/").Result;
+                    return Ok(await result.Content.ReadAsStringAsync());
+                }
+         
 
             }
 
