@@ -25,7 +25,7 @@ namespace PrometheusNetSample.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<string>> Get(bool withPolicy, bool isAsync)
+        public async Task<ActionResult<string>> Get(bool withPolicy=true, bool isAsync=true)
         {
             //        var circuitBreakerPolicy = Policy.Handle<Exception>()
             //.AdvancedCircuitBreaker(
