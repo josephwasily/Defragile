@@ -72,7 +72,7 @@ namespace PrometheusNetSample.WebApi.Controllers
                 else
                 {
                     var result =  _httpClient.GetAsync("/").Result;
-                    return Ok(await result.Content.ReadAsStringAsync());
+                    return Ok(result.Content.ReadAsStringAsync().Result);
                 }
          
 
