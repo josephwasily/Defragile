@@ -90,7 +90,9 @@ namespace PerturbationInjector
                     TrafficGenerator(o, apiUrl, i)
                     );
 
-                Task.WaitAll(chaosEngineeringTask, trafficGenerator);
+                Task.WaitAll(
+                    chaosEngineeringTask,
+                    trafficGenerator);
 
                 Console.WriteLine("Finished the experiment no. " + i + 1);
 
@@ -113,7 +115,7 @@ namespace PerturbationInjector
                                 // NBomber will measure how much time it takes to execute your logic
                                 using HttpClient client = new();
                                 client.BaseAddress = new Uri(apiUrl);
-                                await client.GetAsync("/Experiment?withPolicy=true&isAsync=true");
+                                await client.GetAsync("/Experiment?withPolicy=false&isAsync=false");
                                 return NBomber.CSharp.Response.Ok();
                             }
                         )
@@ -129,10 +131,10 @@ namespace PerturbationInjector
                     var stats = NBomberRunner
                         .RegisterScenarios(scenario_delay)
                         .WithReportFileName(
-                            $"experiment_{DateTime.UtcNow.Day}_antifragile_{i}"
+                            $"experiment_{DateTime.UtcNow.Day}_steadystate_{i}"
                         )
                         .WithReportFolder(
-                            $"experiment_{DateTime.UtcNow.Day}_antiragile_{i}"
+                            $"experiment_{DateTime.UtcNow.Day}_steadystate_{i}"
                         )
                         .WithReportFormats(
                             ReportFormat.Txt,
