@@ -10,11 +10,11 @@ namespace PrometheusNetSample.WebApi.Controllers
     [Route("[controller]")]
     public class ExperimentResilientController : ControllerBase
     {
-        private readonly ILogger<ExperimentController> _logger;
+        private readonly ILogger<ExperimentResilientController> _logger;
         private readonly HttpClient _httpClient;
 
         public ExperimentResilientController(
-            ILogger<ExperimentController> logger,
+            ILogger<ExperimentResilientController> logger,
             IHttpClientFactory _clientFactor
         )
         {
