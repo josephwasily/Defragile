@@ -8,7 +8,7 @@ services:
     user: root
     privileged: true
     command:
-    - "--enable_metrics=tcp,advtcp,network"
+    #- "--enable_metrics=tcp,advtcp,network"
     - "--store_container_labels=false"
     - "--docker_only=true"
     stdin_open: true
