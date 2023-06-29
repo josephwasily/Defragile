@@ -2,6 +2,7 @@ using AntifragilePolicies.Interfaces;
 using AntifragilePolicies.Polly;
 using HdrHistogram;
 using Prometheus;
+using System.Reflection;
 
 // Build a config object, using env vars and JSON providers.
 IConfiguration config = new ConfigurationBuilder()
@@ -81,4 +82,6 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
             }
         )
         .UseHttpClientMetrics();
+    prometheusClient.LogInjectedLatency(0); // set initial value for latency
+
 }

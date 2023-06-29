@@ -22,7 +22,10 @@ namespace PrometheusNetSample.WebApi.Controllers
         [HttpGet]
         public ActionResult<string> Get()
         {
-            var result = _httpClient.GetAsync("/").Result;
+            var httpRequest = new HttpRequestMessage();
+            httpRequest.Method = HttpMethod.Get;
+
+            var result = _httpClient.Send(httpRequest); //use the synchronous version of httpclient
             return Ok(result.Content.ReadAsStringAsync().Result);
              
          
