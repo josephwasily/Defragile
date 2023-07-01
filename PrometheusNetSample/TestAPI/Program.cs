@@ -83,5 +83,6 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
         )
         .UseHttpClientMetrics();
     prometheusClient.LogInjectedLatency(0); // set initial value for latency
+    prometheusClient.LogLimit(10, clientName); // set initial value for concurrency limit
 
 }
