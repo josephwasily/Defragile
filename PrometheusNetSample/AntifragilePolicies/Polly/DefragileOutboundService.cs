@@ -22,8 +22,8 @@ namespace AntifragilePolicies.Polly
         private readonly int _intervalMs;
         private readonly int _jitterMs;
         private readonly double _timeWindowSeconds;
-        private const int LatencyThresholdSeconds = 2;
-        private const double DecreaseFactor = 0.75;
+        private const int LatencyThresholdSeconds = 3;
+        private const double DecreaseFactor = 0.65;
         private readonly object histogramLock = new object ();
     
         public DefragileOutboundService(
