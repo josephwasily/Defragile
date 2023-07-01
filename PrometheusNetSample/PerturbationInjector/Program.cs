@@ -118,7 +118,7 @@ namespace PerturbationInjector
                                 // NBomber will measure how much time it takes to execute your logic
                                 using HttpClient client = new();
                                 client.BaseAddress = new Uri(apiUrl);
-                                await client.GetAsync("/ExperimentFragile");
+                                await client.GetAsync("/ExperimentAntifragile");
                                 return NBomber.CSharp.Response.Ok();
                             }
                         )
@@ -134,10 +134,10 @@ namespace PerturbationInjector
                     var stats = NBomberRunner
                         .RegisterScenarios(scenario_delay)
                         .WithReportFileName(
-                            $"experiment_{DateTime.UtcNow.Day}_fragile_{i}"
+                            $"experiment_{DateTime.UtcNow.Day}_antifragile_{i}"
                         )
                         .WithReportFolder(
-                            $"experiment_{DateTime.UtcNow.Day}_fragile_{i}"
+                            $"experiment_{DateTime.UtcNow.Day}_antifragile_{i}"
                         )
                         .WithReportFormats(
                             ReportFormat.Txt,
