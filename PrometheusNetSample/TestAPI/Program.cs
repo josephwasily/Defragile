@@ -46,7 +46,7 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
     var host = config["Outbound:Host"];
     var toxiProxyUrl = config["Outbound:ToxiproxyUrl"];
     var clientName = "backendHttpClient";
-    var semaphore = new SemaphoreSlimDynamic(2, 10, 30); //TODO: justify choice of these numbers
+    var semaphore = new SemaphoreSlimDynamic(2, 10, 150); //TODO: justify choice of these numbers
     var prometheusClient = new PrometheusLatencyQueryClient($"http://{host}:9090/api/v1/query" );
     
     // A Histogram covering the range from ~466 nanoseconds to 1 hour (3,600,000,000,000 ns) with a resolution of 3 significant figures:
