@@ -67,9 +67,9 @@ static void RegisterHttpClient(WebApplicationBuilder builder, IConfiguration con
             semaphore,
             histogram,
             clientName,
-            (int)TimeSpan.FromSeconds(3).TotalMilliseconds,
+            (int)TimeSpan.FromSeconds(2).TotalMilliseconds,
             (int)TimeSpan.FromSeconds(0.5).TotalMilliseconds,
-            5
+            2
         );
     });
     builder.Services
