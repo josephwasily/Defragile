@@ -80,7 +80,6 @@ namespace PerturbationInjector
 
         static async Task Main(string[] args)
         {
-            DisableQuickEditMode();
             // Build a config object, using env vars and JSON providers.
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
@@ -392,18 +391,18 @@ namespace PerturbationInjector
 
         private const uint ENABLE_EXTENDED_FLAGS = 0x0080;
 
-        private static void DisableQuickEditMode()
-        {
-            // Disable QuickEdit Mode
-            // Quick Edit mode freezes the app to let users select text.
-            // We don't want that. We want the app to run smoothly in the background.
-            // - https://stackoverflow.com/q/4453692
-            // - https://stackoverflow.com/a/4453779
-            // - https://stackoverflow.com/a/30517482
+        //private static void DisableQuickEditMode()
+        //{
+        //    // Disable QuickEdit Mode
+        //    // Quick Edit mode freezes the app to let users select text.
+        //    // We don't want that. We want the app to run smoothly in the background.
+        //    // - https://stackoverflow.com/q/4453692
+        //    // - https://stackoverflow.com/a/4453779
+        //    // - https://stackoverflow.com/a/30517482
 
-            IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
-            SetConsoleMode(handle, ENABLE_EXTENDED_FLAGS);
-        }
+        //    IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
+        //    SetConsoleMode(handle, ENABLE_EXTENDED_FLAGS);
+        //}
 
     }
 
