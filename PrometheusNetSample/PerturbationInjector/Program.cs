@@ -3,15 +3,20 @@ using Newtonsoft.Json;
 using AntifragilePolicies.Polly;
 using Microsoft.Extensions.Configuration;
 using AntifragilePolicies.Models;
-
 using NBomber.CSharp;
-
 using NBomber.Contracts.Stats;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Docker.DotNet;
+using Docker.DotNet.Models;
 
 namespace PerturbationInjector
 {
+    public class Experiment
+    {
+        public string Name { get; set; }
+        public bool InjectFailure { get; set; }
+    }
     public class Options
     {
         [Option(
@@ -81,29 +86,78 @@ namespace PerturbationInjector
                 .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables()
                 .Build();
+
+
             var o = Parser.Default.ParseArguments<Options>(args).Value;
             var hostUrl = config["Outbound:Host"]?.ToString() ?? throw new Exception();
             var apiUrl = $"http://{hostUrl}:62939";
-            for (int i = 0; i < o.Iterations; i++)
+            var dockerApiUrl = $"http://{hostUrl}:2375";
+
+            DockerClient client = new DockerClientConfiguration(
+            new Uri(dockerApiUrl))
+             .CreateClient();
+            var experiments = new List<Experiment>() {
+                new Experiment{ Name =  "Fragile", InjectFailure = false }, //Steady State
+                new Experiment{ Name =  "Fragile", InjectFailure = true },
+                new Experiment{ Name =  "Resilient", InjectFailure = true },
+                new Experiment{ Name =  "Antifragile", InjectFailure = true },
+
+            };
+            foreach(var experiment in experiments)
             {
-                var chaosEngineeringTask = Task.Factory.StartNew(
-                    InjectLatency(o, hostUrl: hostUrl, i)
-                );
-                var trafficGenerator = Task.Factory.StartNew(
-                    TrafficGenerator(o, apiUrl, i)
-                    );
+                for (int i = 0; i < o.Iterations; i++)
+                {
+                    var trafficGenerator = Task.Factory.StartNew(TrafficGenerator(o, apiUrl, i, experiment.Name));
 
-                 Task.WaitAll(
-                    chaosEngineeringTask,
-                    trafficGenerator);
+                    if (experiment.InjectFailure)
+                    {
+                        var chaosEngineeringTask = Task.Factory.StartNew(InjectLatency(o, hostUrl: hostUrl, i));
+                        Task.WaitAll(chaosEngineeringTask, trafficGenerator);
+                    }
+                    else
+                    {
+                        Task.WaitAll(trafficGenerator);
+                    }
 
-                Console.WriteLine("Finished the experiment no. " + i + 1);
+                    Console.WriteLine("Finished the experiment no. " + i + 1);
+                    await RestartContainer(client);
 
-                await Task.Delay((int)TimeSpan.FromMinutes(5).TotalMilliseconds);
+                }
             }
+           
         }
 
-        private static Func<Task> TrafficGenerator(Options o, string apiUrl, int i)
+        private static async Task RestartContainer(DockerClient client)
+        {
+            var containers = await client.Containers.ListContainersAsync(new ContainersListParameters
+            {
+                Filters = new Dictionary<string, IDictionary<string, bool>>
+                    {
+                        {
+                            "ancestor",
+                            new Dictionary<string, bool>
+                            {
+                                { "prometheusnetsamplewebapi", true }
+                            }
+                        }
+
+                    }
+            });
+            if (containers.Any())
+            {
+                var container = containers.First();
+
+                Console.WriteLine($"Restarting Prometheus Container {container.ID}");
+
+                await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+
+
+                await client.Containers.RestartContainerAsync(container.ID, new ContainerRestartParameters());
+            }
+            await Task.Delay((int)TimeSpan.FromMinutes(4).TotalMilliseconds);
+        }
+
+        private static Func<Task> TrafficGenerator(Options o, string apiUrl, int i, string experimentName)
         {
             return (
                 async () =>
@@ -118,7 +172,7 @@ namespace PerturbationInjector
                                 // NBomber will measure how much time it takes to execute your logic
                                 using HttpClient client = new();
                                 client.BaseAddress = new Uri(apiUrl);
-                                await client.GetAsync("/ExperimentAntifragile");
+                                await client.GetAsync($"/Experiment{experimentName}");
                                 return NBomber.CSharp.Response.Ok();
                             }
                         )
@@ -134,10 +188,10 @@ namespace PerturbationInjector
                     var stats = NBomberRunner
                         .RegisterScenarios(scenario_delay)
                         .WithReportFileName(
-                            $"experiment_{DateTime.UtcNow.Day}_antifragile_{i}"
+                            $"experiment_{DateTime.UtcNow.Day}_{experimentName}_{i+1}"
                         )
                         .WithReportFolder(
-                            $"experiment_{DateTime.UtcNow.Day}_antifragile_{i}"
+                            $"experiment_{DateTime.UtcNow.Day}_{experimentName}_{i+1}"
                         )
                         .WithReportFormats(
                             ReportFormat.Txt,

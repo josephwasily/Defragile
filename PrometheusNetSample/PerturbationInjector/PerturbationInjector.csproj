@@ -9,7 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Docker.DotNet" Version="3.125.15" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	<PackageReference Include="NBomber" Version="4.1.2" />
 	<PackageReference Include="NBomber.Http" Version="4.1.1" />
 	<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
