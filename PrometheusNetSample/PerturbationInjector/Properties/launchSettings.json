@@ -1,8 +1,7 @@
 {
   "profiles": {
     "PerturbationInjector": {
-      "commandName": "Project",
-      "commandLineArgs": " --interval 5 --maximum 15 --duration 480 --target mynginx --iterations 1 --rate 100"
+      "commandName": "Project"
     },
     "Docker": {
       "commandName": "Docker"

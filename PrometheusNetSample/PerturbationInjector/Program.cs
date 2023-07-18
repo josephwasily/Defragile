@@ -9,6 +9,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using NBomber.Sinks.InfluxDB;
+using InfluxDB.Client;
+using System.Net.Http.Headers;
 
 namespace PerturbationInjector
 {
@@ -86,8 +89,10 @@ namespace PerturbationInjector
                 .AddEnvironmentVariables()
                 .Build();
 
+            
+            var o = new Options();
+            config.GetSection("Options").Bind(o);
 
-            var o = Parser.Default.ParseArguments<Options>(args).Value;
             var hostUrl = config["Outbound:Host"]?.ToString() ?? throw new Exception();
             var apiUrl = $"http://{hostUrl}:62939";
             var dockerApiUrl = $"http://{hostUrl}:2375";
@@ -145,20 +150,38 @@ namespace PerturbationInjector
             //}
             
             );
+            await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
             if (containers.Any())
             {
-                foreach(var container in containers)
+                var restarted_containers = new List<string> { "toxiproxy", "nginx", "prometheusnetsamplewebapi" };
+
+                foreach (var container in containers)
                 {
-                    Console.WriteLine($"Restarting Prometheus Container {container.ID}");
-                    await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
-                    await client.Containers.RestartContainerAsync(container.ID, new ContainerRestartParameters());
+                   if(container.State == "running" && restarted_containers.Any(z=> container.Image.Contains(z)))
+                    {
+                        Console.WriteLine($"Restarting Prometheus Container {container.Image}");
+                        await client.Containers.RestartContainerAsync(container.ID, new ContainerRestartParameters());
+                    }
+                  
                 }
             }
-            await Task.Delay((int)TimeSpan.FromMinutes(4).TotalMilliseconds);
+            await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
         }
 
         private static Func<Task> TrafficGenerator(Options o, string apiUrl, int iteration, Experiment experiment)
         {
+
+            var config =
+            new InfluxDBClientOptions.Builder()
+                .Url("https://eu-central-1-1.aws.cloud2.influxdata.com")
+                .AuthenticateToken("QYeAIQkkL7yElyAPwCb3RK4xJYJF66Ehbwu7vL1yruIpJ_tGgYRlx1bDuuz6W7MykgQI29BUffhqBYNep_4Xow==")
+                .Org("Antifragile")
+                .Bucket("Results")
+                .VerifySsl(verifySsl: true)
+                .Build();
+
+            var sink = new InfluxDBSink(new InfluxDBClient(config));
+
             var delayString = experiment.InjectFailure ? "With Delay" : "Without Delay";
             return (
                 async () =>
@@ -186,7 +209,7 @@ namespace PerturbationInjector
                             )
                         );
 
-                    var stats = NBomberRunner
+                    var stats =  NBomberRunner
                         .RegisterScenarios(scenario_delay)
                         .WithReportFileName(
                             $"experiment_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
@@ -200,6 +223,7 @@ namespace PerturbationInjector
                             ReportFormat.Html,
                             ReportFormat.Md
                         )
+                        .WithReportingSinks(sink)
                         .Run();
                 }
             );
