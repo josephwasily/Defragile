@@ -106,7 +106,7 @@ namespace PerturbationInjector
             {
                 for (int i = 0; i < o.Iterations; i++)
                 {
-                    var trafficGenerator = Task.Factory.StartNew(TrafficGenerator(o, apiUrl, i, experiment.Name));
+                    var trafficGenerator = Task.Factory.StartNew(TrafficGenerator(o, apiUrl, i, experiment));
 
                     if (experiment.InjectFailure)
                     {
@@ -128,42 +128,44 @@ namespace PerturbationInjector
 
         private static async Task RestartContainer(DockerClient client)
         {
-            var containers = await client.Containers.ListContainersAsync(new ContainersListParameters
-            {
-                Filters = new Dictionary<string, IDictionary<string, bool>>
-                    {
-                        {
-                            "ancestor",
-                            new Dictionary<string, bool>
-                            {
-                                { "prometheusnetsamplewebapi", true }
-                            }
-                        }
+            var containers = await client.Containers.ListContainersAsync( new ContainersListParameters()
+            //new ContainersListParameters
+            //{
+            //    Filters = new Dictionary<string, IDictionary<string, bool>>
+            //        {
+            //            {
+            //                "ancestor",
+            //                new Dictionary<string, bool>
+            //                {
+            //                    { "prometheusnetsamplewebapi", true }
+            //                }
+            //            }
 
-                    }
-            });
+            //        }
+            //}
+            
+            );
             if (containers.Any())
             {
-                var container = containers.First();
-
-                Console.WriteLine($"Restarting Prometheus Container {container.ID}");
-
-                await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
-
-
-                await client.Containers.RestartContainerAsync(container.ID, new ContainerRestartParameters());
+                foreach(var container in containers)
+                {
+                    Console.WriteLine($"Restarting Prometheus Container {container.ID}");
+                    await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+                    await client.Containers.RestartContainerAsync(container.ID, new ContainerRestartParameters());
+                }
             }
             await Task.Delay((int)TimeSpan.FromMinutes(4).TotalMilliseconds);
         }
 
-        private static Func<Task> TrafficGenerator(Options o, string apiUrl, int i, string experimentName)
+        private static Func<Task> TrafficGenerator(Options o, string apiUrl, int iteration, Experiment experiment)
         {
+            var delayString = experiment.InjectFailure ? "With Delay" : "Without Delay";
             return (
                 async () =>
                 {
                     var scenario_delay = Scenario
                         .Create(
-                            "Network-Bound API (With Delay)",
+                            $"Network-Bound API - {delayString}",
                             async context =>
                             {
                                 // you can define and execute any logic here,
@@ -171,7 +173,7 @@ namespace PerturbationInjector
                                 // NBomber will measure how much time it takes to execute your logic
                                 using HttpClient client = new();
                                 client.BaseAddress = new Uri(apiUrl);
-                                await client.GetAsync($"/Experiment{experimentName}");
+                                await client.GetAsync($"/Experiment{experiment.Name}");
                                 return NBomber.CSharp.Response.Ok();
                             }
                         )
@@ -187,10 +189,10 @@ namespace PerturbationInjector
                     var stats = NBomberRunner
                         .RegisterScenarios(scenario_delay)
                         .WithReportFileName(
-                            $"experiment_{DateTime.UtcNow.Day}_{experimentName}_{i+1}"
+                            $"experiment_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
                         )
                         .WithReportFolder(
-                            $"experiment_{DateTime.UtcNow.Day}_{experimentName}_{i+1}"
+                            $"experiment_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
                         )
                         .WithReportFormats(
                             ReportFormat.Txt,
