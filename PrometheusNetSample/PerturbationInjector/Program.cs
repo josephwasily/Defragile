@@ -151,6 +151,7 @@ namespace PerturbationInjector
             
             );
             await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+
             if (containers.Any())
             {
                 var restarted_containers = new List<string> { "toxiproxy", "nginx", "prometheusnetsamplewebapi" };
@@ -165,7 +166,7 @@ namespace PerturbationInjector
                   
                 }
             }
-            await Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+            await Task.Delay((int)TimeSpan.FromMinutes(4).TotalMilliseconds);
         }
 
         private static Func<Task> TrafficGenerator(Options o, string apiUrl, int iteration, Experiment experiment)
@@ -212,10 +213,10 @@ namespace PerturbationInjector
                     var stats =  NBomberRunner
                         .RegisterScenarios(scenario_delay)
                         .WithReportFileName(
-                            $"experiment_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
+                            $"experiments_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
                         )
                         .WithReportFolder(
-                            $"experiment_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
+                            $"experiments_{DateTime.UtcNow.Day}"
                         )
                         .WithReportFormats(
                             ReportFormat.Txt,
