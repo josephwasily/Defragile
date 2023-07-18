@@ -18,4 +18,5 @@ RUN dotnet publish "PerturbationInjector.csproj" -c Release -o /app/publish /p:U
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PerturbationInjector.dll", "--interval", "5", "--maximum", "15", "--duration", "480", "--target","mynginx", "--iterations", "10", "--rate", "100"]
+ENTRYPOINT ["dotnet", "PerturbationInjector.dll"]
+CMD [ "--interval", "5", "--maximum", "15", "--duration", "480", "--target","mynginx", "--rate", "100", "--iterations", "10"]
