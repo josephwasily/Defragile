@@ -201,7 +201,7 @@ namespace PerturbationInjector
                                 return NBomber.CSharp.Response.Ok();
                             }
                         )
-                        .WithoutWarmUp()
+                        .WithWarmUpDuration(TimeSpan.FromSeconds(5))
                         .WithLoadSimulations(
                             Simulation.Inject(
                                 rate: o.Rate,
