@@ -139,7 +139,6 @@ namespace PerturbationInjector
                     {
                         Console.WriteLine(ex.ToString());
                     }
-
                     var trafficGenerator = Task.Factory.StartNew(TrafficGenerator(o, apiUrl, i, experiment));
 
                     if (experiment.InjectFailure)
