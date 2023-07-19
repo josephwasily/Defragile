@@ -1,25 +1,25 @@
 version: '3.4'
 
 services:
-  #cadvisor:
-  #  image: gcr.io/cadvisor/cadvisor:v0.47.1
-  #  restart: unless-stopped
-  #  tty: true
-  #  user: root
-  #  privileged: true
-  #  command:
-  #  #- "--enable_metrics=tcp,advtcp,network"
-  #  - "--store_container_labels=false"
-  #  - "--docker_only=true"
-  #  stdin_open: true
-  #  volumes:
-  #      - /:/rootfs:ro
-  #      - /var/run:/var/run:ro
-  #      - /sys:/sys:ro
-  #      - /var/lib/docker/:/var/lib/docker:ro
-  #      - /dev/disk/:/dev/disk:ro
-  #  ports:
-  #    - "8080:8080" 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.1
+    restart: unless-stopped
+    tty: true
+    user: root
+    privileged: true
+    command:
+    #- "--enable_metrics=tcp,advtcp,network"
+    - "--store_container_labels=false"
+    - "--docker_only=true"
+    stdin_open: true
+    volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:ro
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+        - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8080:8080" 
 
     #networks:
     #  - myNetwork
