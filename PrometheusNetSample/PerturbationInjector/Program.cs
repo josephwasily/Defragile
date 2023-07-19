@@ -129,6 +129,17 @@ namespace PerturbationInjector
             {
                 for (int i = 0; i < o.Iterations; i++)
                 {
+                    try
+                    {
+                        var toxicProxyAPI = $"http://{hostUrl}:8474/proxies/";
+                        //create proxy for nginx service 
+                        await CreateProxy(toxicProxyAPI, "mynginx");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+
                     var trafficGenerator = Task.Factory.StartNew(TrafficGenerator(o, apiUrl, i, experiment));
 
                     if (experiment.InjectFailure)
@@ -143,6 +154,7 @@ namespace PerturbationInjector
 
                     Console.WriteLine("Finished the experiment no. " + i + 1);
                     await RestartContainer(client);
+                    
 
                 }
             }
@@ -257,7 +269,6 @@ namespace PerturbationInjector
                     var apiUrl = $"http://{hostUrl}:62939";
                     var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target + "/toxics";
                     var toxicName = "mynginx";
-                    var toxicProxyAPI = $"http://{hostUrl}:8474/proxies/";
                     var stayAtPeakDuration = TimeSpan.FromSeconds(o.Duration / 5); // 1/5 of the duration the latency should stay at the maximum level
                     var stopDate = DateTime.UtcNow.Add(TimeSpan.FromSeconds(o.Duration));
                     
@@ -271,18 +282,7 @@ namespace PerturbationInjector
                         $"Injecting latency to proxy: {o.Target} {change}s every {o.Interval}s "
                     );
 
-                    try
-                    {
-                        //create proxy for nginx service 
-
-                        await CreateProxy(toxicProxyAPI, "mynginx");
-
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine( ex.ToString() );
-                    }
-         
+          
                     while (DateTime.UtcNow < stopDate && await periodicTimer.WaitForNextTickAsync())
                     {
                         Console.WriteLine("Updating ToxiProxy ");
