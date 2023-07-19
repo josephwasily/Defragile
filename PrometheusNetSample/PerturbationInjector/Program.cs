@@ -181,7 +181,7 @@ namespace PerturbationInjector
             //    .VerifySsl(verifySsl: true)
             //    .Build();
 
-            var sink = new InfluxDBSink(new InfluxDBClient(config));
+            //var sink = new InfluxDBSink(new InfluxDBClient(config));
 
             var delayString = experiment.InjectFailure ? "With Delay" : "Without Delay";
             return (
