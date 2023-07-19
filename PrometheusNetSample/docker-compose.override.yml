@@ -53,10 +53,10 @@ services:
       resources:
         limits:
           cpus: '0.75'
-          memory: 500M
+          memory: 2G
         reservations:
           cpus: '0.25'
-          memory: 250M
+          memory: 500M
     x-develop:
         watch:
         - action: rebuild
