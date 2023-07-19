@@ -131,7 +131,7 @@ namespace PerturbationInjector
                 {
                     try
                     {
-                        var toxicProxyAPI = $"http://{hostUrl}:8474/proxies/";
+                        var toxicProxyAPI = $"http://{hostUrl}:8474/proxies";
                         //create proxy for nginx service 
                         await CreateProxy(toxicProxyAPI, "mynginx");
                     }
