@@ -172,14 +172,14 @@ namespace PerturbationInjector
         private static Func<Task> TrafficGenerator(Options o, string apiUrl, int iteration, Experiment experiment)
         {
 
-            var config =
-            new InfluxDBClientOptions.Builder()
-                .Url("https://eu-central-1-1.aws.cloud2.influxdata.com")
-                .AuthenticateToken("QYeAIQkkL7yElyAPwCb3RK4xJYJF66Ehbwu7vL1yruIpJ_tGgYRlx1bDuuz6W7MykgQI29BUffhqBYNep_4Xow==")
-                .Org("Antifragile")
-                .Bucket("Results")
-                .VerifySsl(verifySsl: true)
-                .Build();
+            //var config =
+            //new InfluxDBClientOptions.Builder()
+            //    .Url("https://eu-central-1-1.aws.cloud2.influxdata.com")
+            //    .AuthenticateToken("QYeAIQkkL7yElyAPwCb3RK4xJYJF66Ehbwu7vL1yruIpJ_tGgYRlx1bDuuz6W7MykgQI29BUffhqBYNep_4Xow==")
+            //    .Org("Antifragile")
+            //    .Bucket("Results")
+            //    .VerifySsl(verifySsl: true)
+            //    .Build();
 
             var sink = new InfluxDBSink(new InfluxDBClient(config));
 
@@ -224,7 +224,6 @@ namespace PerturbationInjector
                             ReportFormat.Html,
                             ReportFormat.Md
                         )
-                        .WithReportingSinks(sink)
                         .Run();
                 }
             );
@@ -256,7 +255,7 @@ namespace PerturbationInjector
                         Console.WriteLine("Updating ToxiProxy ");
                         //call toxiproxy api
                         var toxics = await GetToxics(toxiproxyUrl, toxiProxyClient);
-                        if (toxics.Any())
+                        if (toxics != null && toxics.Any())
                         {
                             //get toxic
                             var toxic = toxics.First();
