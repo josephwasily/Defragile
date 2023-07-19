@@ -20,6 +20,24 @@ namespace PerturbationInjector
         public string Name { get; set; }
         public bool InjectFailure { get; set; }
     }
+    public partial class Proxy
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("listen")]
+        public string Listen { get; set; }
+
+        [JsonProperty("upstream")]
+        public string Upstream { get; set; }
+
+        [JsonProperty("downstream")]
+        public string Downstream { get; set; }
+
+        [JsonProperty("enabled")]
+        public bool Enabled { get; set; }
+    }
+
     public class Options
     {
         [Option(
@@ -239,10 +257,12 @@ namespace PerturbationInjector
                     var apiUrl = $"http://{hostUrl}:62939";
                     var toxiproxyUrl = $"http://{hostUrl}:8474/proxies/" + o.Target + "/toxics";
                     var toxicName = "mynginx";
+                    var toxicProxyAPI = $"http://{hostUrl}:8474/proxies/";
                     var stayAtPeakDuration = TimeSpan.FromSeconds(o.Duration / 5); // 1/5 of the duration the latency should stay at the maximum level
                     var stopDate = DateTime.UtcNow.Add(TimeSpan.FromSeconds(o.Duration));
+                    
                     var toxiProxyClient = new HttpClient();
-                    var apiClient = new HttpClient();
+
                     var iterations = ((o.Duration - (o.Duration / 5)) / o.Interval); //number of iterations throughout the duration
                     double change = (o.Maximum / (iterations / 2.0)); //change in latency per iteration
 
@@ -250,6 +270,19 @@ namespace PerturbationInjector
                     Console.WriteLine(
                         $"Injecting latency to proxy: {o.Target} {change}s every {o.Interval}s "
                     );
+
+                    try
+                    {
+                        //create proxy for nginx service 
+
+                        await CreateProxy(toxicProxyAPI, "mynginx");
+
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine( ex.ToString() );
+                    }
+         
                     while (DateTime.UtcNow < stopDate && await periodicTimer.WaitForNextTickAsync())
                     {
                         Console.WriteLine("Updating ToxiProxy ");
@@ -257,7 +290,7 @@ namespace PerturbationInjector
                         var toxics = await GetToxics(toxiproxyUrl, toxiProxyClient);
                         if (toxics != null && toxics.Any())
                         {
-                            //get toxic
+                            //get available toxic
                             var toxic = toxics.First();
 
                             if ((toxic.Attributes.Latency / 1000) >= o.Maximum && change > 0)
@@ -275,7 +308,7 @@ namespace PerturbationInjector
                             // var request = new HttpRequestMessage(HttpMethod.Delete, $"{toxiproxyUrl}/{toxicName}");
                             //var response = await client.SendAsync(request);
 
-                            //create toxic
+                            //update existing toxic
                             await UpdateToxic(
                                 newLatency,
                                 (long)(newLatency * 0.1),
@@ -330,6 +363,29 @@ namespace PerturbationInjector
                 Toxicity = 1,
                 Type = "latency",
                 Attributes = new Attributes { Latency = latency, Jitter = jitter, }
+            };
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(toxic),
+                null,
+                "application/json"
+            );
+            request.Content = content;
+            var response = await client.SendAsync(request);
+        }
+
+        public static async Task CreateProxy
+            (string proxyAPI, string proxyName)
+        {
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{proxyAPI}");
+            var toxic = new Proxy()
+            {
+               Name = proxyName,
+               Listen= "mytoxiproxy:22220",
+               Upstream= "13.48.131.223:80",
+               Downstream = "13.48.131.223:80",
+               Enabled = true
             };
 
             var content = new StringContent(
