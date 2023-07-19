@@ -216,7 +216,7 @@ namespace PerturbationInjector
                             $"experiments_{DateTime.UtcNow.Day}_{experiment.Name}_{delayString}_{iteration+1}"
                         )
                         .WithReportFolder(
-                            $"experiments_{DateTime.UtcNow.Day}"
+                            $"experiments"
                         )
                         .WithReportFormats(
                             ReportFormat.Txt,
