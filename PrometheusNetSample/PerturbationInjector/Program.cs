@@ -152,7 +152,7 @@ namespace PerturbationInjector
                     }
 
                     Console.WriteLine("Finished the experiment no. " + i + 1);
-                    await RestartContainer(client);
+                    //await RestartContainer(client);
                     
 
                 }
