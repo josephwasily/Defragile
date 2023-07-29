@@ -113,7 +113,7 @@ namespace PerturbationInjector
 
             var hostUrl = config["Outbound:Host"]?.ToString() ?? throw new Exception();
             var apiUrl = $"http://{hostUrl}:62939";
-            var dockerApiUrl = $"http://{hostUrl}:2375";
+            var dockerApiUrl = $"http://{hostUrl}:2385";
 
             DockerClient client = new DockerClientConfiguration(
             new Uri(dockerApiUrl))
@@ -152,9 +152,8 @@ namespace PerturbationInjector
                     }
 
                     Console.WriteLine("Finished the experiment no. " + i + 1);
-                    //await RestartContainer(client);
-                    
-
+                    await RestartContainer(client);
+                    await Task.Delay((int)TimeSpan.FromMinutes(4).TotalMilliseconds);
                 }
             }
            
@@ -195,7 +194,6 @@ namespace PerturbationInjector
                   
                 }
             }
-            await Task.Delay((int)TimeSpan.FromMinutes(4).TotalMilliseconds);
         }
 
         private static Func<Task> TrafficGenerator(Options o, string apiUrl, int iteration, Experiment experiment)
